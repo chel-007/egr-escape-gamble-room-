@@ -1,0 +1,367 @@
+.root {
+  position: relative;
+  width: 100%;
+  height: 768px;
+  flex-direction: column;
+  align-items: flex-start;
+  background-color: #000000;
+  overflow: hidden;
+}
+.rectangle4 {
+  position: absolute;
+  left: calc(50% - 1.5px);
+  top: 0;
+  width: 100%;
+  height: 768px;
+  background-color: #020202;
+  transform: translateX(-50%);
+}
+.dice675482_19201 {
+  position: absolute;
+  left: 50%;
+  top: -270px;
+  width: 100%;
+  height: 720px;
+  background-image:/* webpackIgnore: true */ url("assets/dice675482_19201.jpeg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  transform: translateX(-50%);
+}
+.cover {
+  opacity: 0.5;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1366px;
+  height: 768px;
+  flex-direction: column;
+  background-image:/* webpackIgnore: true */ url("assets/cover.jpeg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  overflow: hidden;
+}
+/* .icon2 {
+  position: absolute;
+  left: 660px;
+  top: 424px;
+  width: 40px;
+  height: 32.766px;
+  overflow: visible;
+}
+.icon3 {
+  width: 100%;
+  height: 100%;
+}
+.rO {
+  background-image: linear-gradient(180deg, #5f5f5fff 0%, #ffff 100%);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 40px;
+  font-weight: 900;
+  font-family: Kurri Island PERSONAL, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+  position: absolute;
+  left: 594px;
+  top: 415px;
+  width: min-content;
+  height: min-content;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.oM {
+  background-image: linear-gradient(180deg, #5f5f5fff 0%, #ffff 100%);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 40px;
+  font-weight: 900;
+  font-family: Kurri Island PERSONAL, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+  position: absolute;
+  left: 710px;
+  top: 415px;
+  width: min-content;
+  height: min-content;
+  white-space: nowrap;
+  flex-direction: column;
+} */
+.group12 {
+  position: absolute;
+  /* left: 508px; */
+  top: 54.5%;
+  display: flex;
+  align-items: center; 
+  justify-content: center;
+  left: 52%;
+  
+}
+.icon {
+  position: absolute;
+  width: 404.2481px;
+  height: 44.0368px;
+  overflow: visible;
+}
+.room {
+  position: absolute; /* Change to fixed position */
+  display: flex; /* Add flex display */
+  align-items: center; /* Center align items vertically */
+  justify-content: center; /* Center align items horizontally */
+  top: 53%; /* Position at the center of the viewport */
+  left: 50%; /* Position at the center of the viewport */
+  transform: translate(-50%, -50%);
+}
+
+.icon3 {
+  /* Remove position:absolute and set width to auto */
+  width: 40px;
+  height: 32.766px;
+  overflow: visible;
+}
+
+.rO, .oM {
+  background-image: linear-gradient(180deg, #5f5f5fff 0%, #ffff 100%);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 40px;
+  font-weight: 900;
+  width: min-content;
+  height: min-content;
+  white-space: nowrap;
+  flex-direction: column;
+  font-family: Kurri Island PERSONAL, system-ui, -apple-system, "Segoe UI";
+  margin: 0 12px; /* Add margin for spacing */
+}
+
+.eSCAPEGAMBLE {
+  background-image: linear-gradient(0deg, #f60f 0%, #ffd028ff 100%);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 60px;
+  font-weight: 900;
+  font-family: "Overpass", system-ui, -apple-system, "Segoe UI";
+  position: absolute;
+  left: calc(50% - -0.5px);
+  top: 310px;
+  width: min-content;
+  height: min-content;
+  white-space: nowrap;
+  flex-direction: column;
+  transform: translateX(-50%);
+}
+.neon {
+  position: absolute;
+  display: flex;
+  align-items: center; 
+  justify-content: center;
+  top: 60%; 
+  left: 50%;
+}
+.group16 {
+  position: absolute;
+  /* left: 473px;
+  top: 445px; */
+  width: 420px;
+  height: 85.5413px;
+  overflow: visible;
+}
+.icon4 {
+  width: 100%;
+  height: 100%;
+}
+.backround {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 768px;
+  overflow: visible;
+}
+.icon5 {
+  width: 100%;
+  height: 100%;
+}
+.group13 {
+  position: absolute;
+  left: -108px;
+  top: -100px;
+  width: 434px;
+  height: 422px;
+  overflow: visible;
+}
+.icon6 {
+  width: 100%;
+  height: 100%;
+}
+.surviveTheRoomChanceVsSkill {
+  position: absolute;
+  left: calc(50% - 4.5px);
+  top: 70%;
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+  transform: translateX(-50%);
+}
+.labelWrapper {
+  font-size: 18px;
+  font-family: "Overpass", "Segoe UI", Roboto, "Helvetica Neue";
+  flex-shrink: 1;
+}
+.label {
+  background-image: linear-gradient(180deg, #f60f 0%, #ffd028ff 100%);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 14px;
+  font-family: Kurri Island PERSONAL, system-ui, -apple-system, "Segoe UI";
+  letter-spacing: 0.02em;
+}
+
+.frame126605 {
+  position: absolute;
+  left: 50%;
+  top: 73%;
+  width: 210px;
+  height: min-content;
+  justify-content: center;
+  padding: 16px 10px;
+  border-radius: 70px;
+  background-color: #231f20;
+  transform: translateX(-50%);
+}
+.frame126605:hover {
+  background-color: #333; /* Lighter gray color */
+  cursor: pointer;
+  .playGame{
+    background-image: linear-gradient(180deg, #f60f 0%, #ffd028ff 100%);
+    /* Clip the background to the text */
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+.playGame {
+  color: #fff;
+  font-size: 20px;
+  font-family: Kurri Island PERSONAL, system-ui, -apple-system, "Segoe UI";
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+  letter-spacing: 0.03em;
+}
+.icon7 {
+  width: 100%;
+  height: 100%;
+}
+.chel {
+  position: absolute;
+  left: 81.8267px;
+  top: 431.4527px;
+  padding: 20px;
+  width: fit-content;
+  height: fit-content;
+  display: flex;
+  flex-direction: column; /* Align children vertically */
+  align-items: center; /* Center horizontally */
+}
+.chel:hover{
+  cursor: pointer;
+}
+
+.autoLayoutHorizontal {
+  width: 83.9604px;
+  height: 21.2111px;
+  padding: 9.2px;
+  border-radius: 73.6789px;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffd028;
+  cursor: pointer; /* Ensure cursor changes on hover */
+}
+
+/* .autoLayoutHorizontal:hover {
+  background-color: #f60f;
+} */
+
+.chel007 {
+  color: #131313;
+  font-size: 13px;
+  font-family: "Overpass", system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.vector {
+  margin-top: -50px;
+  margin-left: 70px;
+  width: 20.4187px;
+  height: 22.5729px;
+}
+.icon8 {
+  width: 100%;
+  height: 100%;
+}
+
+.autoLayoutHorizontal2 {
+  transform-origin: top left;
+  position: absolute;
+  left: 1098.6433px;
+  top: 254.1817px;
+  width: 83.9604px;
+  height: 21.2111px;
+  justify-content: center;
+  align-items: center;
+  padding: 9.2099px;
+  border-radius: 73.6789px;
+  background-color: #989898;
+  transform: matrix(0.9922, 0.1246, -0.1246, 0.9922, 0, 0);
+}
+.revanth91 {
+  color: #131313;
+  font-size: 13px;
+  font-family: "Overpass", system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+  letter-spacing: 0.02em;
+  width: min-content;
+  height: min-content;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.vector2 {
+  position: absolute;
+  left: 1170px;
+  top: 230.7458px;
+  width: 19.0481px;
+  height: 21.4695px;
+  overflow: visible;
+}
+.icon9 {
+  width: 100%;
+  height: 100%;
+}

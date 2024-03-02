@@ -1,0 +1,1158 @@
+.root {
+  position: relative;
+  width: 100%;
+  height: 768px;
+  flex-direction: column;
+  align-items: flex-start;
+  background-color: #020202;
+  overflow: hidden;
+}
+.mainBG {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 100%;
+  height: 768px;
+  background-color: #020202;
+  transform: translateX(-50%);
+}
+.sideNavBG {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 81px;
+  height: 768px;
+  background-color: #10121e;
+  box-shadow: inset -2px 0px 0px #202430;
+  overflow: hidden;
+  z-index: 5;
+  flex-direction: column;
+  align-items: center;
+  /* border: 1px red solid; */
+}
+.profileBG {
+  position: relative;
+  top: 3%;
+  width: 46px;
+  height: 46px;
+  filter: drop-shadow(0px 0px 20px #ff660040);
+}
+.icon {
+  width: 100%;
+  height: 100%;
+}
+.gameOptionsCont {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: fit-content;
+  top: 12%;
+}
+
+.gameOptionsCont > :not(:first-child) {
+  margin-bottom: 80px;
+}
+
+.roomactive {
+  width: fit-content;
+  height: fit-content;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.roominactive {
+  width: 100%;
+  height: fit-content;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.roomactiveBg {
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
+  background-color: #fdd800;
+  box-shadow: 0px 0px 20px 0px #ff660080;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+.roominactiveBg {
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  background-color: #99957f;
+  box-shadow: 0px 0px 40px 0px #c9520380;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.roomactiveIcon {
+  width: 22px;
+}
+.roominactiveIcon {
+  width: 15px;
+}
+
+.icon2 {
+  width: 100%;
+  height: 100%;
+}
+
+.roomText {
+  flex-direction: column;
+  align-items: center;
+}
+
+.activeTextBlock {
+  color: #d4d1d8;
+  font-size: 11px;
+  font-family: Overpass Mono, system-ui, -apple-system, 'Segoe UI';
+  margin-top: 4px;
+}
+.inactiveTextBlock {
+  color: #d4d1d8;
+  font-size: 8.5px;
+  font-family: Overpass Mono, system-ui, -apple-system, 'Segoe UI';
+  margin-top: 4px;
+}
+
+.gameTitleBg {
+  position: absolute;
+  left: 81px;
+  top: 0;
+  width: 169px;
+  height: 82px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 0 0 2px;
+  background-color: #171b27;
+  box-shadow: inset -2px 0px 0px #202430, 10px 0px 40px 0px #0006;
+  gap: 2px;
+}
+.aPTOS {
+  color: #979ba3;
+  font-size: 18px;
+  font-family: Overpass Mono, system-ui, -apple-system, 'Segoe UI';
+  letter-spacing: 0.05em;
+  width: min-content;
+  height: min-content;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.eGR {
+  color: #979ba3;
+  font-size: 18px;
+  font-family: Overpass Mono, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  letter-spacing: 0.05em;
+  width: min-content;
+  height: min-content;
+  text-shadow: 0px 0px 5px #ff660080;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.star {
+  width: 28px;
+  height: 28px;
+  overflow: visible;
+  filter: drop-shadow(0px 0px 5px #ff660080);
+}
+.icon3 {
+  width: 100%;
+  height: 100%;
+}
+.line1 {
+  position: absolute;
+  left: 80px;
+  top: 18px;
+  width: 0px;
+  max-width: 100%;
+  height: 46px;
+  max-height: 100%;
+  overflow: visible;
+}
+.icon4 {
+  width: 100%;
+  height: 100%;
+}
+.midSectionBg {
+  position: absolute;
+  left: 81px;
+  top: 82px;
+  width: 1285px;
+  height: 512px;
+  background-color: #181b2a;
+  
+}
+.midSectionGradient {
+  position: relative;
+  width: 100%;
+  height: 512px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: linear-gradient(to bottom, rgba(10, 11, 15, 0.8), rgba(18, 18, 22, 0.2));
+  /* transform: translate(-50%, -50%); */
+}
+.roomdetailsBg {
+  position: relative;
+  width: 1192px;
+  height: 422px;
+  border-radius: 30px;
+  background-color: #1b1e2d;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  justify-content: start;
+  padding-top: 1.5%;
+  align-items: center;
+}
+
+.roomactionHeader {
+  position: relative;
+  width: 800px;
+  height: 60px;
+  /* top: -33%; */
+  outline: solid 1.5px #50576a;
+  border-radius: 15px;
+  background-color: #1b1e2d;
+  align-items: center;
+  justify-content: center;
+}
+.activeBg {
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  width: 393px;
+  height: 45px;
+  border-radius: 10px;
+  background-color: #ffe701;
+  cursor: pointer;
+}
+
+.inactiveBg {
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  width: 393px;
+  height: 45px;
+  border-radius: 10px;
+  background-color: #1b1e2d;
+  cursor: pointer;
+}
+
+.inactiveBg .roomactionOpt {
+  color: #50576a;
+}
+.jOINROOM {
+  color: #000;
+  font-size: 17px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI';
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.cREATEROOM {
+  position: relative;
+  font-size: 17px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI';
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+
+.createRoomDiv{
+  position: relative;
+  background-color: #10131c;
+  width: 80%;
+  height: 70%;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.createRoomBtn{
+  font-size: 15px;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI';;
+  background-color: #fdd800;
+  border-radius: 16px;
+  font-weight: bold;
+  color: black;
+  padding: 2% 5%;
+}
+.roomRes {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+
+.roomNav {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  gap: 90px;
+  padding-left: 1.5%;
+}
+.roomIdHeader {
+  color: #5b6b8a;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI';
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.roomCreatorHeader {
+  color: #5b6b8a;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI';
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.roomSizeHeader {
+  color: #5b6b8a;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI';
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.availableSeatsHeader {
+  color: #5b6b8a;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI';
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.spectatorsHeader {
+  color: #5b6b8a;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI';
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.roomBettingHeader {
+  color: #5b6b8a;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI';
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+
+.roomBg {
+  position: relative;
+  width: 1000px;
+  height: 40px;
+  border-radius: 3px;
+  background-color: #10131c;
+  display: flex;
+  flex-direction: row;
+  gap: 11.5%;
+  padding-left: 2.5%;
+  align-items: center;
+}
+.roomId {
+  color: #5b6b8a;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI';
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+}
+.roomCreator {
+  color: #d4d1d8;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI';
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+}
+.roomSize {
+  color: #5b6b8a;
+  position: relative;
+  left: 1%;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI';
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.availableSeats {
+  position: relative;
+  left: 2.5%;
+  color: #5b6b8a;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI';
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+}
+.spectators {
+  position: relative;
+  left: 4.9%;
+  color: #5b6b8a;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI';
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+}
+.roomBetting {
+  position: relative;
+  left: 6.2%;
+  color: #ffe701;
+  font-size: 15px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI';
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+}
+.howto {
+  position: absolute;
+  left: 81px;
+  top: 77%;
+  bottom: 0;
+  background-color: #020202;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
+  gap: 20px;
+  /* border: 1px red solid; */
+}
+.divider {
+  background-color: #50576a;
+  width: 1285.0004px;
+  max-width: 100%;
+  height: 0.5px;
+  max-height: 100%;
+  overflow: visible;
+}
+.icon5 {
+  width: 100%;
+  height: 100%;
+}
+
+.howtoplayBox {
+ width: fit-content;
+ height: fit-content;
+ display: flex;
+ flex-direction: row;
+ align-items: center;
+ justify-content: center;
+ gap: 10px;
+}
+.howToPlayText {
+  width: 92%;
+  height: fit-content;
+  text-align: center;
+  align-items: center;
+  flex-direction: column;
+  position: relative;
+  color: #d4d1d8;
+  font-size: 14.5px;
+  font-weight: 500;
+  font-style: normal;
+  font-family: Overpass Mono, system-ui, -apple-system, 'Segoe UI';
+  letter-spacing: 0.06em;
+  /* border: 1px red solid; */
+}
+.infoIcon {
+  width: 16px;
+  height: 16px;
+}
+.icon6 {
+  width: 100%;
+  height: 100%;
+}
+.howToPlay {
+  color: #d4d1d8;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  font-family: Overpass Mono, system-ui, -apple-system, 'Segoe UI';
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.navBar {
+  position: absolute;
+  background-color: #141726;
+  left: 248px;
+  top: 0;
+  width: 1118px;
+  height: 82px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 260px;
+}
+.links {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 60px;
+}
+
+.links div {
+  cursor: pointer;
+}
+.navLinkBox{
+  position: relative;
+  height: fit-content;
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+  align-items: end;
+  gap: 8px;
+  /* border: 1px red solid; */
+}
+.activeLinkText {
+  color: #d4d1d8;
+  font-size: 14px;
+  font-weight: bold;
+  font-family: Overpass Mono, system-ui, -apple-system, 'Segoe UI';
+  letter-spacing: 0.04em;
+}
+.activeFill {
+  width: 15px;
+  height: 15px;
+  overflow: visible;
+  filter: drop-shadow(0px 0px 10px #ff660040);
+}
+.inactiveFill {
+  width: 15px;
+  height: 15px;
+  overflow: visible;
+}
+.inactiveLinkIcon {
+  width: 15px;
+  height: 15px;
+  overflow: visible;
+}
+.inactiveLinkText {
+  color: #586b90;
+  font-size: 14px;
+  font-weight: bold;
+  font-family: Overpass Mono, system-ui, -apple-system, 'Segoe UI';
+  letter-spacing: 0.04em;
+}
+.navIcon {
+  width: 100%;
+  height: 100%;
+}
+.navSpecIcon {
+  align-items: center;
+  width: 100%;
+  height: 70%;
+}
+
+/* .spectateIcon {
+  position: absolute;
+  left: 33.8946%;
+  right: 65.0073%;
+  top: 4.6875%;
+  bottom: 94.0104%;
+  overflow: visible;
+}
+.icon9 {
+  width: 100%;
+  height: 100%;
+}
+.spectateText {
+  color: #586b90;
+  font-size: 14px;
+  font-weight: bold;
+  font-family: Overpass Mono, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  letter-spacing: 0.02em;
+  position: absolute;
+  left: 486px;
+  top: calc(50% - 343px);
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+  transform: translateY(-50%);
+} */
+.navLine {
+  position: absolute;
+  left: 311px;
+  top: 82px;
+  width: 100px;
+  max-width: 100%;
+  height: 0;
+  max-height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0px 0px 20px #f60) drop-shadow(0px 0px 40px #f60) drop-shadow(0px 0px 60px #f60);
+}
+.icon11 {
+  width: 100%;
+  height: 100%;
+}
+.connect {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 20px;
+}
+.connectwalletBg {
+  width: 112px;
+  height: 36px;
+  border-radius: 10px;
+  background-color: #fdd800;
+  box-shadow: 0px 0px 20px 0px #ff660080;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12%;
+  cursor: pointer;
+}
+.loginText {
+  color: #000;
+  font-size: 15px;
+  font-weight: 500;
+  font-family: Overpass Mono, system-ui, -apple-system, 'Segoe UI';
+  letter-spacing: 0.15em;
+  /* width: min-content;
+  height: min-content;
+  white-space: nowrap;
+  flex-direction: column; */
+}
+.dollar {
+  width: 15px;
+  height: 15px;
+  overflow: visible;
+}
+.icon12 {
+  width: 100%;
+  height: 100%;
+}
+.balance {
+  width: 95px;
+  height: 36px;
+  overflow: visible;
+}
+.icon13 {
+  width: 100%;
+  height: 100%;
+}
+
+/* .roomBg2 {
+  position: absolute;
+  left: calc(50% - -24px);
+  top: 306px;
+  width: 1000px;
+  height: 40px;
+  border-radius: 3px;
+  background-color: #10131c;
+  transform: translateX(-50%);
+}
+.roomCreator2 {
+  color: #d4d1d8;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  position: absolute;
+  left: 376px;
+  top: 319px;
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.roomId2 {
+  color: #5b6b8a;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  position: absolute;
+  left: 235px;
+  top: 319px;
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.roomSize2 {
+  color: #5b6b8a;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  position: absolute;
+  left: 549px;
+  top: 319px;
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.availableSeats2 {
+  color: #5b6b8a;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  position: absolute;
+  left: 702px;
+  top: 319px;
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.spectators2 {
+  color: #5b6b8a;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  position: absolute;
+  left: 877px;
+  top: 319px;
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.roomBetting2 {
+  color: #ffe701;
+  font-size: 15px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  position: absolute;
+  left: 1019px;
+  top: 319px;
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.roomBg3 {
+  position: absolute;
+  left: calc(50% - -24px);
+  top: 361px;
+  width: 1000px;
+  height: 40px;
+  border-radius: 3px;
+  background-color: #10131c;
+  transform: translateX(-50%);
+}
+.roomCreator3 {
+  color: #d4d1d8;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  position: absolute;
+  left: 372px;
+  top: 374px;
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.roomId3 {
+  color: #5b6b8a;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  position: absolute;
+  left: 235px;
+  top: 374px;
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.roomSize3 {
+  color: #5b6b8a;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  position: absolute;
+  left: 547px;
+  top: 374px;
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.availableSeats3 {
+  color: #5b6b8a;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  position: absolute;
+  left: 699px;
+  top: 374px;
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.spectators3 {
+  color: #5b6b8a;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  position: absolute;
+  left: 877px;
+  top: 374px;
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.roomBetting3 {
+  color: #ffe701;
+  font-size: 15px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  position: absolute;
+  left: 1019px;
+  top: 374px;
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.roomBg4 {
+  position: absolute;
+  left: calc(50% - -24px);
+  top: 416px;
+  width: 1000px;
+  height: 40px;
+  border-radius: 3px;
+  background-color: #10131c;
+  transform: translateX(-50%);
+}
+.roomCreator4 {
+  color: #d4d1d8;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  position: absolute;
+  left: 376px;
+  top: 429px;
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.roomId4 {
+  color: #5b6b8a;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  position: absolute;
+  left: 235px;
+  top: 429px;
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.roomSize4 {
+  color: #5b6b8a;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  position: absolute;
+  left: 549px;
+  top: 429px;
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.availableSeats4 {
+  color: #5b6b8a;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  position: absolute;
+  left: 703px;
+  top: 429px;
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.spectators4 {
+  color: #5b6b8a;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  position: absolute;
+  left: 875px;
+  top: 429px;
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.roomBetting4 {
+  color: #ffe701;
+  font-size: 15px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  position: absolute;
+  left: 1022px;
+  top: 429px;
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.roomBg5 {
+  position: absolute;
+  left: calc(50% - -24px);
+  top: 471px;
+  width: 1000px;
+  height: 40px;
+  border-radius: 3px;
+  background-color: #10131c;
+  transform: translateX(-50%);
+}
+.roomCreator5 {
+  color: #d4d1d8;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  position: absolute;
+  left: 365px;
+  top: 484px;
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.roomId5 {
+  color: #5b6b8a;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  position: absolute;
+  left: 235px;
+  top: 484px;
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.roomSize5 {
+  color: #5b6b8a;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  position: absolute;
+  left: 547px;
+  top: 484px;
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.availableSeats5 {
+  color: #5b6b8a;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  position: absolute;
+  left: 699px;
+  top: 484px;
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.spectators5 {
+  color: #5b6b8a;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  position: absolute;
+  left: 875px;
+  top: 484px;
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+}
+.roomBetting5 {
+  color: #ffe701;
+  font-size: 15px;
+  font-weight: bold;
+  font-family: Overpass, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  position: absolute;
+  left: 1018px;
+  top: 484px;
+  width: min-content;
+  height: min-content;
+  text-align: center;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: column;
+} */
+
+/* .textBlock3 {
+  color: #d4d1d8;
+  font-size: 14px;
+  font-weight: bold;
+  font-family: Overpass Mono, system-ui, -apple-system, 'Segoe UI';
+  letter-spacing: 0.02em;
+}
+.textBlock4 {
+  color: #d4d1d8;
+  font-size: 14px;
+  font-weight: bold;
+  font-family: Overpass Mono, system-ui, -apple-system, 'Segoe UI';
+  letter-spacing: 0.02em;
+}
+.textBlock5 {
+  color: #d4d1d8;
+  font-size: 14px;
+  font-weight: bold;
+  font-family: Overpass Mono, system-ui, -apple-system, 'Segoe UI';
+  letter-spacing: 0.02em;
+} */
