@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-// import { Types, Network, Provider } from "aptos";
 import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
 
 const GetRoomList = ({ setRooms, setIsLoading }) => {
@@ -8,36 +7,32 @@ const GetRoomList = ({ setRooms, setIsLoading }) => {
     const aptosClient = new Aptos(config);
 
     useEffect(() => {
+        const fetchRooms = async () => {
+            setIsLoading(true);
 
-    const fetchRooms = async () => {
-    setIsLoading(true);
+            try {
+                const roomsResponse = await aptosClient.view({
+                    payload: {
+                        function: `${'0x26b0ab8afb0b67adcbeab1d1f04ef8d067c5b7b8f0ee65e23994bf3d00a4506f'}::dapp::get_rooms`,
+                    },
+                });
 
-    try {
+                // Flatten the array of arrays
+                
 
-    const rooms = (await aptosClient.view({
-        payload: {
-          function: `${'0x26b0ab8afb0b67adcbeab1d1f04ef8d067c5b7b8f0ee65e23994bf3d00a4506f'}::dapp::get_rooms`,
-        },
-      }));
+                setRooms(roomsResponse);          
+            } catch (error) {
+                console.error('Error fetching room list:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
-        setRooms(rooms);
-        console.log(rooms)
-
-    } catch (error) {
-
-        console.error('Error fetching room list:', error);
-
-    } finally {
-
-        setIsLoading(false);
-
-    }
-    };
-
-    fetchRooms();
+        fetchRooms();
     }, [setRooms, setIsLoading]);
 
-  return null;
+    // Return something meaningful here, depending on your use case
+    return null;
 };
 
 export default GetRoomList;

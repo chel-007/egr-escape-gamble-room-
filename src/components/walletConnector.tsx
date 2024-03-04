@@ -20,9 +20,7 @@ export default function WalletConnector(props: { isTxnInProgress?: boolean }) {
     const { connect, account, connected, disconnect, wallets, isLoading } = useWallet();
     const [balance, setBalance] = useState<string | undefined>(undefined);
     const [isFaucetLoading, setIsFaucetLoading] = useState(false);
-
-    console.log(useWallet())
-    console.log(account)
+    
     useEffect(() => {
         if (connected && account) {
           ensureAccountExists().then(() => {
@@ -93,7 +91,9 @@ export default function WalletConnector(props: { isTxnInProgress?: boolean }) {
                     },
                   }
                 )
-              } catch (e) {
+              } catch (error) {
+
+                alert(error);
                 setBalance("0");
                 return;
               }
@@ -112,27 +112,28 @@ export default function WalletConnector(props: { isTxnInProgress?: boolean }) {
           {!connected && !isLoading && (
             <Dialog>
               <DialogTrigger asChild>
+                
               <div className={classes.connectwalletBg}>
                 <div className={classes.dollar}>
                     <DollarIcon className={classes.icon12} />
                 </div>
-                <div className={classes.loginText}>Connect Wallet</div>
+                <div className={classes.loginText}>connect</div>
             </div>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent style={{width: '20%', backgroundColor: 'black'}}>
                 <DialogHeader>
-                  <DialogTitle>Connect your wallet</DialogTitle>
-                  {
-                wallets.map((wallet) => (
-                    <div key={wallet.name} className="flex w-full items-center justify-between rounded-xl p-2">
-                    <h1>{wallet.name}</h1>
+                  <DialogTitle style={{color: 'white', fontSize: '20px', fontFamily: 'Lato', textAlign: 'center'}}>Connect your wallet</DialogTitle>
+                  {wallets.map((wallet) => (
+                  <div style={{marginLeft: '10%', alignItems: 'center', display: 'flex', flexDirection: 'row', gap: '10%'}} key={wallet.name} className="flex w-full items-center justify-between rounded-xl p-2">
+                    <h1 style={{color: '#586b90', fontFamily: 'Lato', fontSize: '20px'}}>{wallet.name}</h1>
                     {wallet.readyState === WalletReadyState.Installed ? (
-                    <button onClick={() => connect(wallet.name)}>
+                    <button style={{  width: '100px', height: '35px', borderRadius: '10px', backgroundColor: '#fdd800', cursor: 'pointer'}} 
+                      onClick={() => connect(wallet.name)}>
                         Connect
                     </button>
                     ) : (
                     <a href={wallet.url} target="_blank">
-                        <button>Install</button>
+                      <button style={{  width: '100px', height: '35px', borderRadius: '10px', backgroundColor: '#fdd800', cursor: 'pointer'}} >Install</button>
                     </a>
                     )}
                 </div>
@@ -144,10 +145,12 @@ export default function WalletConnector(props: { isTxnInProgress?: boolean }) {
       )}
 
         {isLoading && (
-        <div className={classes.balance}>
-            <BalanceIcon className={classes.icon13} />
-            Loading ...
-        </div>
+          <div className={classes.connectwalletBg}>
+                <div className={classes.dollar}>
+                    <DollarIcon className={classes.icon12} />
+                </div>
+                <div className={classes.loginText}>Loading...</div>
+            </div>
         )}
 
         {
@@ -155,7 +158,8 @@ export default function WalletConnector(props: { isTxnInProgress?: boolean }) {
         <div className={classes.connect}>
             <div className={classes.balance}>
                 <BalanceIcon className={classes.icon13} />
-                {balance} APT | {account.address.slice(0, 5)}...{account.address.slice(-4)}
+                <p>{balance} APT</p>
+                {/* | {account.address.slice(0, 5)}...{account.address.slice(-4)} */}
             </div>
 
             <div className={classes.connectwalletBg}>

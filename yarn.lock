@@ -29,6 +29,14 @@
     jsonpointer "^5.0.0"
     leven "^3.1.0"
 
+"@aptos-labs/aptos-client@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@aptos-labs/aptos-client/-/aptos-client-0.0.2.tgz#e8266a731a9a906d1e8aefc04539ae548dead750"
+  integrity sha512-FgKZb5zDPz8MmAcVxXzYhxP6OkzuIPoDRJp48YJ8+vrZ9EOZ35HaWGN2M3u+GPdnFE9mODFqkxw3azh3kHGZjQ==
+  dependencies:
+    axios "0.27.2"
+    got "^11.0.0"
+
 "@aptos-labs/aptos-client@^0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@aptos-labs/aptos-client/-/aptos-client-0.1.0.tgz#911fb27e436e5731290de0e0cfce6e0d3feeabaa"
@@ -36,6 +44,18 @@
   dependencies:
     axios "1.6.2"
     got "^11.8.6"
+
+"@aptos-labs/ts-sdk@^0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@aptos-labs/ts-sdk/-/ts-sdk-0.0.3.tgz#94c3f47bc6d0f2131936bacd2ca777a6434e146b"
+  integrity sha512-1qVcKAMToLI+EOrw0kQvL9/yyXZ7iU4/NIpvFokIWK6DNe3ExSu+SebwFc0jAqyy/kvMWht8FBF2hnmW2G1pyA==
+  dependencies:
+    "@aptos-labs/aptos-client" "^0.0.2"
+    "@noble/curves" "^1.2.0"
+    "@noble/hashes" "1.1.3"
+    "@scure/bip39" "1.1.0"
+    form-data "4.0.0"
+    tweetnacl "1.0.3"
 
 "@aptos-labs/ts-sdk@^1.9.1":
   version "1.9.1"
@@ -51,21 +71,43 @@
     form-data "^4.0.0"
     tweetnacl "^1.0.3"
 
-"@aptos-labs/wallet-adapter-core@3.6.0":
-  version "3.6.0"
-  resolved "https://registry.yarnpkg.com/@aptos-labs/wallet-adapter-core/-/wallet-adapter-core-3.6.0.tgz#04f407646a5ce69c6877397668ffb505d9f99656"
-  integrity sha512-xSwlOlTmBgFvPMDBlD/7D7FSJ22ioC8z3O6iYQls1qvV2ibrL6RThGKMC8QD2qus9f0rP9523RLNJT4P/RvSOg==
+"@aptos-labs/wallet-adapter-core@2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@aptos-labs/wallet-adapter-core/-/wallet-adapter-core-2.1.0.tgz#cfce6a6ff187fdddbf48ece1cb6fd7601a1c33dd"
+  integrity sha512-ZSCCsFt2heEh9IDaObbzw8EwqfzJGCWGBoaGouBtOYn2DVkh5R0P9xRj6ryF9cuO+tkfP+8KZmZ9m4c+xsJN2g==
   dependencies:
+    aptos "^1.3.17"
     buffer "^6.0.3"
     eventemitter3 "^4.0.7"
     tweetnacl "^1.0.3"
 
-"@aptos-labs/wallet-adapter-react@^2.1.8":
-  version "2.1.8"
-  resolved "https://registry.yarnpkg.com/@aptos-labs/wallet-adapter-react/-/wallet-adapter-react-2.1.8.tgz#86792dd448bd04e20b4c2aa11786ae0db99f77da"
-  integrity sha512-gpLuafUaykq8HUfSR5BRDRNl4kHfSrnZphqo29HkJdZLnKhv7sOKRUoFNXJP1jfPX7nX0ce38pg24v8SVg8gvw==
+"@aptos-labs/wallet-adapter-core@2.5.1":
+  version "2.5.1"
+  resolved "https://registry.yarnpkg.com/@aptos-labs/wallet-adapter-core/-/wallet-adapter-core-2.5.1.tgz#75d4a306e0246c19dc5b68cbf4873a7fc151aa50"
+  integrity sha512-ny6CD47ivpnVV22reyN6LouDMVY9eccY3F3HscqfhAK+IqFm4C1C4BTFCoMQwPe9/yht2E/B6VuZBRIsYf7NvQ==
   dependencies:
-    "@aptos-labs/wallet-adapter-core" "3.6.0"
+    aptos "^1.14.0"
+    buffer "^6.0.3"
+    eventemitter3 "^4.0.7"
+    tweetnacl "^1.0.3"
+
+"@aptos-labs/wallet-adapter-core@^2.5.0":
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/@aptos-labs/wallet-adapter-core/-/wallet-adapter-core-2.6.0.tgz#0f849eaeeab099a22a793c2a1287812bf73f6e9a"
+  integrity sha512-GVnjnwzW/dnEW1ceHUB6vj9u37Hth38oIngc4ERdXf9cl9BlXut4e0bLHCUrbHGOtF7rx1NuDVwYH7GYsh6vSQ==
+  dependencies:
+    "@aptos-labs/ts-sdk" "^0.0.3"
+    buffer "^6.0.3"
+    eventemitter3 "^4.0.7"
+    tweetnacl "^1.0.3"
+
+"@aptos-labs/wallet-adapter-react@1.3.2":
+  version "1.3.2"
+  resolved "https://registry.yarnpkg.com/@aptos-labs/wallet-adapter-react/-/wallet-adapter-react-1.3.2.tgz#a88ff2e458c8a6ffc33d9c7f6cc91e8c8544714b"
+  integrity sha512-aZ1tfzD5Gp56zpjhgBWHgWUd45FN6V6/NiZ9ClFuCJE+gEw/3R6ezGwjuXAMEEKdFarBSY3qMQDXzInLa+lFDg==
+  dependencies:
+    "@aptos-labs/wallet-adapter-core" "2.5.1"
+    react "^18"
 
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.10.4", "@babel/code-frame@^7.12.13", "@babel/code-frame@^7.16.0", "@babel/code-frame@^7.23.5", "@babel/code-frame@^7.8.3":
   version "7.23.5"
@@ -1643,6 +1685,14 @@
   resolved "https://registry.npmjs.org/@leichtgewicht/ip-codec/-/ip-codec-2.0.4.tgz"
   integrity sha512-Hcv+nVC0kZnQ3tD9GVu5xSMR4VVYOteQIr/hwFPVEvPdlXqgGEuRjiheChHgdM+JyqdgNcmzZOX/tnl0JOiI7A==
 
+"@martianwallet/aptos-wallet-adapter@0.0.4":
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/@martianwallet/aptos-wallet-adapter/-/aptos-wallet-adapter-0.0.4.tgz#010e83070cec7006d76904789d8f54fd087039e2"
+  integrity sha512-B7z+Ff87L0cs4IMTF9+LCXGAWwQecihwN0QVI6NtJLWjV85A9MdlBC6oXiIC5J0ob3mtAMX2iOb2z2Xp37lxww==
+  dependencies:
+    "@aptos-labs/wallet-adapter-core" "2.1.0"
+    aptos "^1.4.0"
+
 "@nicolo-ribaudo/eslint-scope-5-internals@5.1.1-v1":
   version "5.1.1-v1"
   resolved "https://registry.npmjs.org/@nicolo-ribaudo/eslint-scope-5-internals/-/eslint-scope-5-internals-5.1.1-v1.tgz"
@@ -1657,10 +1707,20 @@
   dependencies:
     "@noble/hashes" "1.3.3"
 
+"@noble/hashes@1.1.3":
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.1.3.tgz#360afc77610e0a61f3417e497dcf36862e4f8111"
+  integrity sha512-CE0FCR57H2acVI5UOzIGSSIYxZ6v/HOhDR0Ro9VLyhnzLwx0o8W1mmgaqlEUx4049qJDlIBRztv5k+MM8vbO3A==
+
 "@noble/hashes@1.3.3", "@noble/hashes@^1.3.3", "@noble/hashes@~1.3.0", "@noble/hashes@~1.3.2":
   version "1.3.3"
   resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.3.3.tgz#39908da56a4adc270147bb07968bf3b16cfe1699"
   integrity sha512-V7/fPHgl+jsVPXqqeOzT8egNj2iBIVt+ECeMMG8TdcnTikP3oaBtUVqpT/gYCR68aEBJSF+XbYUxStjbFMqIIA==
+
+"@noble/hashes@~1.1.1":
+  version "1.1.5"
+  resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.1.5.tgz#1a0377f3b9020efe2fae03290bd2a12140c95c11"
+  integrity sha512-LTMZiiLc+V4v1Yi16TD6aX2gmtKszNye0pQgbaLqkvhIqP7nVsSaJsWloGQjJfJ8offaoP5GtX3yY5swbcJxxQ==
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
@@ -1910,6 +1970,14 @@
     "@noble/curves" "~1.3.0"
     "@noble/hashes" "~1.3.2"
     "@scure/base" "~1.1.4"
+
+"@scure/bip39@1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@scure/bip39/-/bip39-1.1.0.tgz#92f11d095bae025f166bef3defcc5bf4945d419a"
+  integrity sha512-pwrPOS16VeTKg98dYXQyIjJEcWfz7/1YJIwxUEPFfQPtc86Ym/1sVgQ2RLoD43AazMk2l/unK4ITySSpW2+82w==
+  dependencies:
+    "@noble/hashes" "~1.1.1"
+    "@scure/base" "~1.1.0"
 
 "@scure/bip39@1.2.1":
   version "1.2.1"
@@ -2831,7 +2899,19 @@ anymatch@^3.0.3, anymatch@~3.1.2:
     normalize-path "^3.0.0"
     picomatch "^2.0.4"
 
-aptos@^1.21.0:
+aptos@1.19.0:
+  version "1.19.0"
+  resolved "https://registry.yarnpkg.com/aptos/-/aptos-1.19.0.tgz#47d075bfd8d28da4ff3c59aa5d1d25335744e168"
+  integrity sha512-IEvEfBFndhDce1HCMdow24Dh52sFFuRcgDpjTbH3Fi4TQpCD9s7zX+C5eCzTNiWQmEH/dfL2uDw5dbREGQxsbQ==
+  dependencies:
+    "@aptos-labs/aptos-client" "^0.0.2"
+    "@noble/hashes" "1.1.3"
+    "@scure/bip39" "1.1.0"
+    eventemitter3 "^5.0.1"
+    form-data "4.0.0"
+    tweetnacl "1.0.3"
+
+aptos@^1.14.0, aptos@^1.3.17, aptos@^1.4.0:
   version "1.21.0"
   resolved "https://registry.yarnpkg.com/aptos/-/aptos-1.21.0.tgz#346623967a6d038a85f02d71ed6ec62c4cd2ae5e"
   integrity sha512-PRKjoFgL8tVEc9+oS7eJUv8GNxx8n3+0byH2+m7CP3raYOD6yFKOecuwjVMIJmgfpjp6xH0P0HDMGZAXmSyU0Q==
@@ -3036,6 +3116,14 @@ axe-core@=4.7.0:
   version "4.7.0"
   resolved "https://registry.npmjs.org/axe-core/-/axe-core-4.7.0.tgz"
   integrity sha512-M0JtH+hlOL5pLQwHOLNYZaXuhqmvS8oExsqB1SBYgA4Dk7u/xx+YdGHXaK5pyUfed5mYXdlYiphWq3G8cRi5JQ==
+
+axios@0.27.2:
+  version "0.27.2"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-0.27.2.tgz#207658cc8621606e586c85db4b41a750e756d972"
+  integrity sha512-t+yRIyySRTp/wua5xEr+z1q60QmLq8ABsS5O9Me1AsE5dfKqgnCFzwiCZZ/cGNd1lq4/7akDWMxdhVlucjmnOQ==
+  dependencies:
+    follow-redirects "^1.14.9"
+    form-data "^4.0.0"
 
 axios@1.6.2:
   version "1.6.2"
@@ -4926,7 +5014,7 @@ flatted@^3.2.9:
   resolved "https://registry.npmjs.org/flatted/-/flatted-3.3.1.tgz"
   integrity sha512-X8cqMLLie7KsNUDSdzeN8FYK9rEt4Dt67OsG/DNGnYTSDBG4uFAJFBnUeiV+zCVAvwFy56IjM9sH51jVaEhNxw==
 
-follow-redirects@^1.0.0, follow-redirects@^1.15.0:
+follow-redirects@^1.0.0, follow-redirects@^1.14.9, follow-redirects@^1.15.0:
   version "1.15.5"
   resolved "https://registry.npmjs.org/follow-redirects/-/follow-redirects-1.15.5.tgz"
   integrity sha512-vSFWUON1B+yAw1VN4xMfxgn5fTUiaOzAJCKBwIIgT/+7CuGy9+r+5gITvP62j3RmaD5Ph65UaERdOSRGUzZtgw==
@@ -5205,7 +5293,7 @@ gopd@^1.0.1:
   dependencies:
     get-intrinsic "^1.1.3"
 
-got@^11.8.6:
+got@^11.0.0, got@^11.8.6:
   version "11.8.6"
   resolved "https://registry.yarnpkg.com/got/-/got-11.8.6.tgz#276e827ead8772eddbcfc97170590b841823233a"
   integrity sha512-6tfZ91bOr7bOXnK7PRDCGBLa1H4U080YHNaAQ2KsMGlLEzRbk44nsZF2E1IeRc3vtJHPVbKCYgdFbaGO2ljd8g==
@@ -7286,6 +7374,14 @@ performance-now@^2.1.0:
   resolved "https://registry.npmjs.org/performance-now/-/performance-now-2.1.0.tgz"
   integrity sha512-7EAHlyLHI56VEIdK57uwHdHKIaAGbnXPiw0yWbarQZOKaKpvUIgW0jWRVLiatnM+XXlSwsanIBH/hzGMJulMow==
 
+petra-plugin-wallet-adapter@0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/petra-plugin-wallet-adapter/-/petra-plugin-wallet-adapter-0.3.0.tgz#e39431438c553c99f4598d877e45b20a881df08e"
+  integrity sha512-snhhP/qKXLg4foKsDVvy0Jus3H7o46L75aDCXiiSAonty2CnZe1+4cpB8azc7khaMgig+xj9gZbZXKmKtB+HqA==
+  dependencies:
+    "@aptos-labs/wallet-adapter-core" "^2.5.0"
+    aptos "^1.4.0"
+
 picocolors@^0.2.1:
   version "0.2.1"
   resolved "https://registry.npmjs.org/picocolors/-/picocolors-0.2.1.tgz"
@@ -8213,9 +8309,9 @@ react-style-singleton@^2.2.1:
     invariant "^2.2.4"
     tslib "^2.0.0"
 
-react@18.2.0:
+react@18.2.0, react@^18:
   version "18.2.0"
-  resolved "https://registry.npmjs.org/react/-/react-18.2.0.tgz"
+  resolved "https://registry.yarnpkg.com/react/-/react-18.2.0.tgz#555bd98592883255fa00de14f1151a917b5d77d5"
   integrity sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==
   dependencies:
     loose-envify "^1.1.0"
