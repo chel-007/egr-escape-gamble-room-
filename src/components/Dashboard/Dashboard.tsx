@@ -1,4 +1,4 @@
-import { memo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import type { FC } from 'react';
 import resets from '../_resets.module.css';
 import classes from './Dashboard.module.css';
@@ -23,6 +23,7 @@ import {
   AptosWalletAdapterProvider,
   useWallet,
 } from "@aptos-labs/wallet-adapter-react";
+import ActiveGame from '../ActiveGame';
 
 interface Props {
   className?: string;
@@ -73,6 +74,7 @@ export const Dashboard: FC<Props> = memo(function Dashboard(props = {}) {
   return (
     <div className={`${resets.clapyResets} ${classes.root}`}>
       <AptosWalletAdapterProvider plugins={wallets} autoConnect={true}>
+      <ActiveGame></ActiveGame>
       <div className={classes.mainBG}>
       <div className={classes.sideNavBG}>
         <div className={classes.profileBG}>
@@ -159,7 +161,9 @@ export const Dashboard: FC<Props> = memo(function Dashboard(props = {}) {
                             {!isLoading &&
                               detailedRooms.flat().map((detailedRoom) => (
                                 detailedRoom.id === room.id && (
-                                  <JoinRoom detailedRoom={detailedRooms} roomId={detailedRoom.id} setIsLoading={setIsLoading} />
+                                  <JoinRoom detailedRoom={detailedRooms} roomId={detailedRoom.id} setIsLoading={setIsLoading}
+                                  onJoinSuccess={detailedRoom.id} />
+                                  
                                 )
                               ))}
                           </div>

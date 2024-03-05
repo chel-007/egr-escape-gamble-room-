@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Types } from "aptos";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import classes from '../components/Dashboard/Dashboard.module.css';
+import Room from '../components/Game/Room';
 
-const JoinRoom = ({ detailedRoom, roomId, setIsLoading }) => {
+const JoinRoom = ({ detailedRoom, roomId, setIsLoading, onJoinSuccess }) => {
   const { account, isLoading, signAndSubmitTransaction } = useWallet();
+  const [joinSuccessful, setJoinSuccessful] = useState(false);
 
   const handleJoinRoom = async () => {
     setIsLoading(true);
@@ -15,7 +17,7 @@ const JoinRoom = ({ detailedRoom, roomId, setIsLoading }) => {
       type_arguments: [],
       arguments: [
         account?.address,
-        detailedRoom.id,
+        roomId,
         0,
         0
       ]
@@ -23,7 +25,15 @@ const JoinRoom = ({ detailedRoom, roomId, setIsLoading }) => {
 
     try {
       let response = await signAndSubmitTransaction(payload);
+
+      localStorage.setItem('activeRoomId', roomId);
+
       console.log(response);
+      alert("You have successfully Joined Room");
+
+      onJoinSuccess(detailedRoom.id);
+      setJoinSuccessful(true);
+
     } catch (error) {
       console.error('Error encountered', error);
       if (error === "WalletNotConnectedError") {
@@ -35,6 +45,12 @@ const JoinRoom = ({ detailedRoom, roomId, setIsLoading }) => {
   };
 
   console.log(detailedRoom[roomId].players_list);
+
+  
+
+  if (joinSuccessful) {
+    return <Room roomId={roomId} />;
+  }
 
 return (
     <div>
