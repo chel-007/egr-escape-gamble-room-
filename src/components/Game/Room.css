@@ -1,0 +1,32 @@
+.room-container {
+    position: relative;
+    width: 100%;
+  }
+  
+  .ui-container {
+    position: absolute;
+    top: 20px; /* Adjust top position as needed */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%);
+    background: linear-gradient(45deg, orange, yellow); /* Gradient background */
+    padding: 10px;
+    border-radius: 10px;
+    color: white;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); /* Add shadow for depth */
+    z-index: 2;
+  }
+  .connect-wallet {
+    position: absolute;
+    top: 40px;
+    left: 82%;
+    z-index: 2;
+  }
+  
+  .countdown {
+    font-size: 1.2rem;
+    margin-top: 10px;
+  }
+  
+  /* Add more styling for other elements as needed */
+  

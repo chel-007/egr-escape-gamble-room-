@@ -5,14 +5,14 @@ import { useNavigate } from 'react-router-dom';
 import resets from "../_resets.module.css";
 import { BackroundIcon } from "./BackroundIcon";
 import { Group12Icon } from "./Group12Icon";
-import { Group13Icon } from "./Group13Icon";
-import { Group13Icon2 } from "./Group13Icon2";
 import { Group16Icon } from "./Group16Icon";
 import classes from "./TV1.module.css";
 import { Tv1Icon } from "./Tv1Icon";
 import { VectorIcon } from "./VectorIcon";
 import { VectorIcon2 } from "./VectorIcon2";
 import { gsap } from "gsap";
+import {useWallet} from "@aptos-labs/wallet-adapter-react";
+import diceBg from "../../assets/dice675482_19201.jpeg"
 
 interface Props {
   className?: string;
@@ -20,6 +20,9 @@ interface Props {
 /* @figmaId 33:4502 */
 export const TV1: FC<Props> = memo(function TV1(props = {}) {
   const navigate = useNavigate();
+  const { account } = useWallet();
+
+  console.log(account?.address)
 
   const handleButtonClick = () => {
     // Navigate to the Dashboard page

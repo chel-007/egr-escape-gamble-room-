@@ -120,7 +120,7 @@ export default function WalletConnector(props: { isTxnInProgress?: boolean }) {
                 <div className={classes.loginText}>connect</div>
             </div>
               </DialogTrigger>
-              <DialogContent style={{width: '20%', backgroundColor: 'black'}}>
+              <DialogContent style={{width: '20%', backgroundColor: 'black', position: 'absolute', }}>
                 <DialogHeader>
                   <DialogTitle style={{color: 'white', fontSize: '20px', fontFamily: 'Lato', textAlign: 'center'}}>Connect your wallet</DialogTitle>
                   {wallets.map((wallet) => (

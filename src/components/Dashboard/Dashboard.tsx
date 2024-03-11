@@ -17,10 +17,7 @@ import CreateRoom from "../../rooms/CreateRoom";
 import JoinRoom from '../../rooms/JoinRoom';
 import GetRoomByID from '../../rooms/GetRoomByID';
 import WalletConnector from '../walletConnector';
-import { PetraWallet } from "petra-plugin-wallet-adapter";
-import { MartianWallet } from "@martianwallet/aptos-wallet-adapter";
 import {
-  AptosWalletAdapterProvider,
   useWallet,
 } from "@aptos-labs/wallet-adapter-react";
 import ActiveGame from '../ActiveGame';
@@ -40,8 +37,6 @@ interface Room {
 
 /* @figmaId 68:2 */
 
-const wallets = [new PetraWallet(), new MartianWallet()];
-
 export const Dashboard: FC<Props> = memo(function Dashboard(props = {}) {
 
   const [selectedGame, setSelectedGame] = useState(0);
@@ -51,7 +46,9 @@ export const Dashboard: FC<Props> = memo(function Dashboard(props = {}) {
   const [txnInProgress, setTxnInProgress] = useState(false);
   const [activeOption, setActiveOption] = useState('JOIN ROOM');
 
-  const { connected } = useWallet();
+  const { connected, account } = useWallet();
+
+  // console.log(account)
 
   const handleOptionClick = (option) => {
     setActiveOption(option);
@@ -68,12 +65,11 @@ export const Dashboard: FC<Props> = memo(function Dashboard(props = {}) {
     { name: "Duels", icon: EscaperoomIconIcon },
   ];
   
-  console.log(rooms)
-  console.log(detailedRooms)
+  // console.log(rooms)
+  // console.log(detailedRooms)
  
   return (
     <div className={`${resets.clapyResets} ${classes.root}`}>
-      <AptosWalletAdapterProvider plugins={wallets} autoConnect={true}>
       <ActiveGame></ActiveGame>
       <div className={classes.mainBG}>
       <div className={classes.sideNavBG}>
@@ -161,8 +157,7 @@ export const Dashboard: FC<Props> = memo(function Dashboard(props = {}) {
                             {!isLoading &&
                               detailedRooms.flat().map((detailedRoom) => (
                                 detailedRoom.id === room.id && (
-                                  <JoinRoom detailedRoom={detailedRooms} roomId={detailedRoom.id} setIsLoading={setIsLoading}
-                                  onJoinSuccess={detailedRoom.id} />
+                                  <JoinRoom detailedRoom={detailedRooms} roomId={detailedRoom.id} setIsLoading={setIsLoading} />
                                   
                                 )
                               ))}
@@ -292,7 +287,6 @@ export const Dashboard: FC<Props> = memo(function Dashboard(props = {}) {
 
     </div>  {/* End of div with class navBar. */}
     </div>
-    </AptosWalletAdapterProvider>
   </div>
   );
 });

@@ -22,7 +22,7 @@
   top: -270px;
   width: 100%;
   height: 720px;
-  background-image:/* webpackIgnore: true */ url("assets/dice675482_19201.jpeg");
+  background-image: url('../../assets/dice675482_19201.jpeg');
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;

@@ -1,11 +1,22 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { Box } from '@react-three/drei';
 import { Mesh } from 'three';
-import { useNavigate } from 'react-router-dom';
+import * as THREE from 'three';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Aptos, AptosConfig, MoveValue, Network } from "@aptos-labs/ts-sdk";
-
+import { Text } from '@react-three/drei';
+import ParticleSystem from './ParticleSystem';
+import { MeshBasicMaterial, Material } from 'three';
+import { SphereGeometry } from 'three';
+import {
+  useWallet,
+} from "@aptos-labs/wallet-adapter-react";
+import { Types, Provider } from "aptos";
+import './Room.css';
+import useAddPlayerInput from './AddPlayerInput';
+import WalletConnector from '../walletConnector';
 
 interface RoomGridItem {
   active: boolean;
@@ -17,73 +28,175 @@ interface RoomGridItem {
 
 const Room = ({ roomId }) => {
   const [roomGrid, setRoomGrid] = useState<RoomGridItem[] | null>(null);
+  const [playerPosition, setPlayerPosition] = useState<{ x: number; y: number } | null>(null);
+  const particleSystem = useRef<THREE.Mesh>(null);
+  const [turn, setTurn] = useState(1);
+  const [countdown, setCountdown] = useState(20);
+  const [turnEnded, setTurnEnded] = useState(false);
+  const [simulating, setSimulating] = useState(false);
+  const [dependency, setDependency] = useState(true)
+  const [cellClicked, setCellClicked] = useState(false);
+  const [addPlayerInputComponent, setAddPlayerInputComponent] = useState(null);
+
+  const { account, connected, signAndSubmitTransaction } = useWallet();
+
+  // const memoizedSetCountdown = useCallback((value) => setCountdown(value), []);
+  // const memoizedSetTurnEnded = useCallback((value) => setTurnEnded(value), []);
 
   const boxRef = useRef<Mesh>(null);
   const navigate = useNavigate();
   const cellSize = 1;
   const padding = 0.1;
+  const hoverColor = '#FFFF00'; 
+  const defaultColor = '#FFFFFF';
+  const playerAddress = account?.address;
   
   // Create a reference for the grid
   const gridRef = useRef<Mesh>(null);
+  console.log(dependency)
 
-  useFetchRoomGrid(roomId, setRoomGrid);
-
+  useFetchRoomGrid(roomId, setRoomGrid, dependency, setDependency);
   usePositionEntities(roomGrid, cellSize, padding);
-
-  console.log(roomGrid)
+  currentTurnTimer(setCountdown, setTurnEnded);
+  roomUpdateLogic(countdown, simulating, setSimulating, setCountdown, setTurn, setDependency)
 
   return (
-    <Canvas
-      camera={{ position: [15, 7, 7], rotation: [-Math.PI / 4, Math.PI / 4, 0] }} // Adjust camera position and rotation
-    >
-      <OrbitControls
-        enableRotate={true}
-        enablePan={true}
-        enableZoom={true}
-        maxPolarAngle={Math.PI / 3} // Limit the top-down rotation
-        minPolarAngle={Math.PI / 6} // Limit the bottom-up rotation
-        maxAzimuthAngle={Math.PI / 3} // Limit the right rotation
-        minAzimuthAngle={-Math.PI / 3} // Limit the left rotation
-      />
-      <color attach="background" args={['black']} />
-      <ambientLight intensity={0.5} />
-      <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
-      {/* Render the grid */}
-      <mesh ref={gridRef}>
-        {/* Create 10x10 grid of cells */}
-        {Array.from({ length: 10 }).map((_, row) =>
-          Array.from({ length: 10 }).map((_, col) => (
-            <Box key={`${row}-${col}`} position={[row * (cellSize + padding), 0, col * (cellSize + padding)]} scale={[cellSize, 0.1, cellSize]} />
-          ))
+    <div className="room-container">
+      {location.pathname === `/room` && (
+      <div className="ui-container">
+        {simulating ? (
+          <>
+            <div className="simulating-info">Simulating...</div>
+            <div className="countdown">Countdown: {countdown}s</div>
+          </>
+          ) : (
+          <>
+            <div className="turn-info">Turn: {turn}</div>
+            <div className="countdown">Countdown: {countdown}s</div>
+          </>
         )}
-      </mesh>
-            {/* Render players */}
-            {roomGrid && roomGrid.map((row, rowIndex) =>
-        row.map((player, colIndex) => (
-          <mesh key={`${rowIndex}-${colIndex}`} position={[player.position.x, 0, player.position.y]}>
-            <Box scale={[0.5, 0.5, 0.5]} />
-          </mesh>
-        ))
+        </div>
       )}
-      
 
-        {/* Render players and item codes */}
-        {/* {roomGrid[0]?.players_list?.map((player, index) => (
-        <mesh key={`player-${index}`} position={[player?.position.x || 0, 0, player?.position.y || 0]}>
-        <Box scale={[0.5, 0.5, 0.5]} />
+      {playerAddress == undefined && (
+      <div className='connect-wallet'>
+      <WalletConnector />
+      </div>
+      )}
+      <Canvas
+        camera={{ position: [15, 7, 7], rotation: [-Math.PI / 4, Math.PI / 4, 0] }}
+      >
+        <OrbitControls
+          enableRotate={true}
+          enablePan={true}
+          enableZoom={true}
+          maxPolarAngle={Math.PI / 3}
+          minPolarAngle={Math.PI / 6}
+          maxAzimuthAngle={Math.PI / 3}
+          minAzimuthAngle={-Math.PI / 3}
+        />
+        <color attach="background" args={['black']} />
+        <ambientLight intensity={0.5} />
+        <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
+
+        {/* Particle system for space background */}
+        <mesh ref={particleSystem}>
+          <sphereGeometry args={[50, 32, 32]} /> {/* Decrease the radius from 100 to 50 */}
+          <meshBasicMaterial color="black" side={THREE.BackSide} />
         </mesh>
-        ))} */}
-      {/* Render item codes similarly */}
-                 
-      {/* useFrame hook inside the Canvas component */}
-      <CanvasFrame boxRef={boxRef} />
-      {/* useEffect hook inside the Canvas component */}
-      <CanvasEffect navigate={navigate} />
-    </Canvas>
+
+        {/* Include the ParticleSystem component */}
+        <ParticleSystem particleSystem={particleSystem} />
+
+        {/* Render the grid */}
+        <mesh ref={gridRef}>
+          {Array.from({ length: 15}).map((_, row) =>
+            Array.from({ length: 15 }).map((_, col) => (
+              <Box
+                key={`${row}-${col}`}
+                position={[row * (cellSize + padding), 0, col * (cellSize + padding)]}
+                scale={[cellSize, 0.1, cellSize]}
+                onPointerOver={() => handleCellHover(gridRef, row, col, hoverColor, defaultColor)}
+                onClick={() => 
+                handleCellClick(row, col, roomGrid, playerAddress,
+                roomId, signAndSubmitTransaction, turnEnded, countdown,
+                setAddPlayerInputComponent, simulating)} // Handle click
+              />
+            ))
+          )}
+        </mesh>
+
+        {roomGrid && roomGrid.map((room, roomIndex) =>
+          room.players_list.map((player, playerIndex) => {
+            // Convert position data to numbers
+            const x = parseFloat(player.position.x);
+            const y = parseFloat(player.position.y);
+
+            // Calculate position within the grid
+            const posX = x * 1; // Assuming cell size is 1
+            const posY = y * 1; // Assuming cell size is 1
+
+            // Define colors for players
+            const colors = ['#ff0000', '#00ff00', '#0000ff']; // Example colors
+            const truncatedAddress = `${player.address.slice(0, 6)}...${player.address.slice(-6)}`;
+
+            return (
+              <group key={`${roomIndex}-${playerIndex}`} position={[posX, 0.5, posY]}>
+                {/* Player Box */}
+                <mesh>
+                  <boxBufferGeometry args={[0.5, 1.5, 0.5]} />
+                  <meshStandardMaterial color={colors[playerIndex % colors.length]} />
+                </mesh>
+                {/* Player Address */}
+                <Text
+                  position={[0, 0.9, 0]} // Adjust position above the player
+                  fontSize={0.1}
+                  color="white"
+                  anchorX="center"
+                  anchorY="middle"
+                  outlineWidth={0.02}
+                  outlineColor="black"
+                >
+                  {truncatedAddress}
+                </Text>
+              </group>
+            );
+          })
+        )}
+
+        {roomGrid && roomGrid.map((room, roomIndex) =>
+          room.items_list.map((item, itemIndex) => {
+            // Convert position data to numbers
+            const x = parseFloat(item.position.x);
+            const y = parseFloat(item.position.y);
+
+            // Calculate position within the grid
+            const posX = x * 1; // Assuming cell size is 1
+            const posY = y * 1; // Assuming cell size is 1
+
+            // Define colors for players
+            const colors = ['#ff0000', '#00ff00', '#0000ff'];
+
+            return (
+              <group key={`${roomIndex}-${itemIndex}`} position={[posX, 0.5, posY]}>
+                {/* item Box */}
+                <mesh>
+                  <sphereGeometry args={[0.5, 14, 7]} />
+                  <meshStandardMaterial color={colors[itemIndex % colors.length]} />
+                </mesh>
+              </group>
+            );
+          })
+        )}
+        {cellClicked && addPlayerInputComponent}
+        <CanvasFrame boxRef={boxRef} />
+        <CanvasEffect navigate={navigate} />
+      </Canvas>
+    </div>
   );
 };
 
-const useFetchRoomGrid = (roomId, setRoomGrid) => {
+const useFetchRoomGrid = (roomId, setRoomGrid, dependency, setDependency) => {
   const config = new AptosConfig({ network: Network.RANDOMNET });
   const aptosClient = new Aptos(config);
 
@@ -92,8 +205,8 @@ const useFetchRoomGrid = (roomId, setRoomGrid) => {
       try {
         const roomGrid = await aptosClient.view({
           payload: {
-              function: `${'0x26b0ab8afb0b67adcbeab1d1f04ef8d067c5b7b8f0ee65e23994bf3d00a4506f'}::dapp::get_room`,
-              functionArguments: [roomId.toString()],
+            function: `${'0xc0a4a8ac1b69d25e7595f69d04580ca77f3d604e235ca4f89dc97b156a61ef30'}::dapp::get_room`,
+            functionArguments: [roomId.toString()],
           },
         });
 
@@ -102,46 +215,255 @@ const useFetchRoomGrid = (roomId, setRoomGrid) => {
       } catch (error) {
         console.error('Error fetching room grid data:', error);
       }
+      console.log("fetchroom", dependency)
     };
-    fetchRoomGrid();
-  }, []); // Run once on component mount
+    if(dependency){
+      fetchRoomGrid();
+    }
+    
+  }, [dependency]); // Run once on component mount
 };
+
+
 
 const usePositionEntities = (roomGrid, cellSize, padding) => {
   useEffect(() => {
     const positionEntities = () => {
-      // Check if roomGrid is not null
       if (roomGrid) {
-        // Map over players and position them in the grid
-        console.log(roomGrid[0].players_list)
         roomGrid[0].players_list.forEach(player => {
-          // Convert position data to numbers
           const x = parseFloat(player.position.x);
           const y = parseFloat(player.position.y);
           
-          // Calculate position within the grid
           const posX = (x * cellSize) + (x * padding);
           const posY = (y * cellSize) + (y * padding);
           
-          // Set player's position in the grid
           player.position.x = posX;
           player.position.y = posY;
-
-          console.log(player.position.x)
         });
-        
-        // Map over item codes and position them in the grid (similar to players)
+
+          roomGrid[0].items_list.forEach(item => {
+            const itemx = parseFloat(item.position.x);
+            const itemy = parseFloat(item.position.y);
+            
+            const itemposX = (itemx * cellSize) + (itemx * padding);
+            const itemposY = (itemy * cellSize) + (itemy * padding);
+            
+            item.position.x = itemposX;
+            item.position.y = itemposY;
+        });
+
+        console.log(roomGrid);
       }
     };
     positionEntities();
   }, [roomGrid]);
 };
 
+const currentTurnTimer = (setCountdown, setTurnEnded) => {
+  useEffect(() => {
+    let countdownTimer: ReturnType<typeof setInterval> | undefined = undefined;
 
-// Custom component for useFrame hook
+    const handleCountdown = () => {
+      setCountdown(prevCountdown => {
+        if (prevCountdown === 0) {
+          clearInterval(countdownTimer);
+          setTurnEnded(true);
+          console.log('Turn ended. Countdown reached 0.');
+          return 0;
+        } else {
+          return prevCountdown - 1;
+        }
+      });
+    };
+
+    countdownTimer = setInterval(handleCountdown, 1000);
+
+    return () => clearInterval(countdownTimer);
+  }, [setCountdown, setTurnEnded]);
+};
+
+const roomUpdateLogic = (countdown, simulating, setSimulating, setCountdown, setTurn, setDependency) => {
+  useEffect(() => {
+    if (countdown === 0 && !simulating) {
+      // Start simulation
+      setSimulating(true);
+      setCountdown(10);
+      console.log('Simulation started...');
+      setDependency(true)
+
+      // Update the UI to indicate simulation
+      setTimeout(async () => {
+        console.log('Simulation ongoing.');
+        // Update room data after simulation
+        // await updateRoom(roomId);
+
+
+        console.log('Room updated after simulation');
+        // End simulation
+        setSimulating(false);
+        // Increment turn
+        setTurn(prevTurn => prevTurn + 1);
+        setDependency(false)
+        // Start countdown for the next turn
+        setCountdown(20);
+      }, 10000); // Simulate for 10 seconds
+    }
+  }, [countdown, simulating, setSimulating, setCountdown, setTurn]);
+
+  const updateRoom = (roomId) => {
+    const config = new AptosConfig({ network: Network.RANDOMNET });
+    const aptosClient = new Aptos(config);
+  
+    useEffect(() => {
+      const updatingRoom = async () => {
+        try {
+          const update = await aptosClient.view({
+            payload: {
+              function: `${'0xc0a4a8ac1b69d25e7595f69d04580ca77f3d604e235ca4f89dc97b156a61ef30'}::dapp::update_room`,
+              functionArguments: [roomId.toString()],
+            },
+          });
+        } catch (error) {
+          console.error('Error Updating Room:', error);
+        }
+      };
+    }, []);
+  };
+};
+
+
+
+const handleCellHover = (gridRef, row: number, col: number, hoverColor: string, defaultColor: string) => {
+  // Find the mesh of the hovered cell
+  const mesh = gridRef.current?.children[row * 15 + col] as Mesh;
+
+  // Check if the material is an array
+  if (Array.isArray(mesh.material)) {
+    // If it's an array, iterate over each material and set the color
+    mesh.material.forEach((material: Material) => {
+      if (material instanceof MeshBasicMaterial) {
+        material.color.set(hoverColor);
+      }
+    });
+  } else {
+    // If it's a single material, set the color directly
+    if (mesh.material instanceof MeshBasicMaterial) {
+      mesh.material.color.set(hoverColor);
+    }
+  }
+
+  // Restore the default color of other cells
+  gridRef.current?.children.forEach((child: Mesh, index: number) => {
+    if (index !== row * 15 + col) {
+      if (Array.isArray(child.material)) {
+        child.material.forEach((material: Material) => {
+          if (material instanceof MeshBasicMaterial) {
+            material.color.set(defaultColor);
+          }
+        });
+      } else {
+        if (child.material instanceof MeshBasicMaterial) {
+          child.material.color.set(defaultColor);
+        }
+      }
+    }
+  });
+};
+
+const handleCellClick = (row: number, col: number, roomGrid, playerAddress, roomId, signAndSubmitTransaction, turnEnded, countdown, setAddPlayerInputComponent, simulating) => {
+  // if (turnEnded) {
+  //   alert('Current turn has ended. You cannot make a move now.');
+  //   return;
+  // }
+  if (simulating) {
+    alert('Simulation in progress. Cannot make a move.');
+    return;
+  }
+  
+  // Get the player's current position
+  const currentPlayerPosition = getPlayerPosition(roomGrid, playerAddress);
+  const newPosition = calculateNewPosition(currentPlayerPosition, row, col);
+  console.log(newPosition)
+
+  if (newPosition) {
+    const { row: newRow, col: newCol } = newPosition;
+    const updatedcol = newCol + 1;
+
+    console.log(roomGrid[0].items_list.some(player => player.position.x === newRow && player.position.y === updatedcol))
+    if(roomGrid[0].players_list.some(player => player.position.x === newRow && player.position.y === updatedcol)) {
+      alert('Another player is occupying this cell. You cannot move here.');
+      return; 
+    }
+    else if(roomGrid[0].items_list.some(item => item.position.x === newRow && item.position.y === updatedcol)) {
+      console.log('You found an item!');
+    }
+    else {
+      console.log("executing add player input");
+      const component = useAddPlayerInput(playerAddress, roomId, newPosition, signAndSubmitTransaction, countdown);
+
+      setAddPlayerInputComponent(component);
+    }
+
+  } 
+  else{
+    console.error('newPosition was invalid');
+  }
+
+};
+
+
+const getPlayerPosition = (roomGrid: RoomGridItem[] | null, playerAddress: string): { row: number, col: number } | null => {
+  if (!roomGrid) {
+    return null;
+  }
+  const currentPlayer = roomGrid.find(room => room.players_list.some(player => player.address === playerAddress));
+
+  console.log("currentPlayer", roomGrid.find(room => room.players_list.some(player => player.address === playerAddress)))
+  if (!currentPlayer) {
+    return null;
+  }
+  const playerPosition = currentPlayer.players_list.find(player => player.address === playerAddress)?.position;
+
+  // console.log(playerPosition)
+
+  if (!playerPosition) {
+    return null;
+  }
+  const row = parseInt(playerPosition.x);
+  const dummycol = parseInt(playerPosition.y);
+  const col = dummycol - 1;
+  return { row, col };
+};
+
+const calculateNewPosition = (currentPlayerPosition, row, col) => {
+  // Extract the current row and column from the player's position
+
+  console.log(currentPlayerPosition)
+  const { row: currentRow, col: currentCol } = currentPlayerPosition;
+
+  // Calculate the absolute difference between the current and clicked cell positions
+  const rowDiff = row - currentRow;
+  const colDiff = col - currentCol;
+
+  console.log(rowDiff, row, currentRow);
+  console.log(colDiff, col, currentCol);
+
+  // Check if the clicked cell is one cell away vertically or horizontally
+  if ((Math.abs(rowDiff) === 1 && colDiff === 0) || (Math.abs(colDiff) === 1 && rowDiff === 0)) {
+    // Return the new position if the clicked cell is one cell away
+    // console.log(x, y)
+    return { row: row, col: col };
+  } else {
+    alert('You can only move one cell up, down, left, or right from your current position.');
+    return null;
+  }
+};
+
+
+
+
 const CanvasFrame = ({ boxRef }) => {
   useFrame(() => {
-    // Rotate the box slowly
     if (boxRef.current) {
       boxRef.current.rotation.x += 0.001;
       boxRef.current.rotation.y += 0.001;
@@ -154,7 +476,6 @@ const CanvasFrame = ({ boxRef }) => {
 const CanvasEffect = ({ navigate }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
-      // Navigate to the /room with the specified roomId
       navigate('/room');
     }, 5000);
 
