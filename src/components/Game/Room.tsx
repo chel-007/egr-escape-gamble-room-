@@ -1,15 +1,14 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, MutableRefObject, useEffect, useState, useCallback } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { Box } from '@react-three/drei';
 import { Mesh } from 'three';
 import * as THREE from 'three';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Aptos, AptosConfig, MoveValue, Network } from "@aptos-labs/ts-sdk";
 import { Text } from '@react-three/drei';
 import ParticleSystem from './ParticleSystem';
-import { MeshBasicMaterial, Material } from 'three';
-import { SphereGeometry } from 'three';
+import { MeshBasicMaterial, Material, Group } from 'three';
 import {
   useWallet,
 } from "@aptos-labs/wallet-adapter-react";
@@ -17,6 +16,10 @@ import { Types, Provider } from "aptos";
 import './Room.css';
 import useAddPlayerInput from './AddPlayerInput';
 import WalletConnector from '../walletConnector';
+import { useLoader } from '@react-three/fiber';
+// import { GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+
 
 interface RoomGridItem {
   active: boolean;
@@ -47,13 +50,23 @@ const Room = ({ roomId }) => {
   const navigate = useNavigate();
   const cellSize = 1;
   const padding = 0.1;
+  const maxItemsPerRow = 4;
+  const itemSpacing = 0.3;
   const hoverColor = '#FFFF00'; 
   const defaultColor = '#FFFFFF';
   const playerAddress = account?.address;
+
+  const ItemModels = {
+    2: '../../assets/box2.glb',
+    3: '../../assets/new.glb',
+    4: '../../assets/new.glb', 
+  };
   
   // Create a reference for the grid
   const gridRef = useRef<Mesh>(null);
-  console.log(dependency)
+  // const modelRef = useRef(null);
+  
+  // console.log(dependency)
 
   useFetchRoomGrid(roomId, setRoomGrid, dependency, setDependency);
   usePositionEntities(roomGrid, cellSize, padding);
@@ -84,16 +97,16 @@ const Room = ({ roomId }) => {
       </div>
       )}
       <Canvas
-        camera={{ position: [15, 7, 7], rotation: [-Math.PI / 4, Math.PI / 4, 0] }}
+        camera={{ position: [-2, 6, 23], rotation: [-Math.PI / 4, Math.PI / 4, 0] }}
       >
         <OrbitControls
           enableRotate={true}
           enablePan={true}
           enableZoom={true}
-          maxPolarAngle={Math.PI / 3}
+          maxPolarAngle={Math.PI / 2.2}
           minPolarAngle={Math.PI / 6}
           maxAzimuthAngle={Math.PI / 3}
-          minAzimuthAngle={-Math.PI / 3}
+          minAzimuthAngle={-Math.PI / 15}
         />
         <color attach="background" args={['black']} />
         <ambientLight intensity={0.5} />
@@ -174,25 +187,96 @@ const Room = ({ roomId }) => {
             const posX = x * 1; // Assuming cell size is 1
             const posY = y * 1; // Assuming cell size is 1
 
-            // Define colors for players
             const colors = ['#ff0000', '#00ff00', '#0000ff'];
 
+            const itemPositionScaleMap = {
+              0: { position: [posX, 0.1, posY], scale: [1, 1, 1] },
+              2: { position: [posX, 0, posY], scale: [1, 1, 1] },
+              3: { position: [posX, 0.4, posY], scale: [2, 2, 2] }, 
+            };
+
             return (
-              <group key={`${roomIndex}-${itemIndex}`} position={[posX, 0.5, posY]}>
-                {/* item Box */}
-                <mesh>
-                  <sphereGeometry args={[0.5, 14, 7]} />
-                  <meshStandardMaterial color={colors[itemIndex % colors.length]} />
-                </mesh>
-              </group>
+              // <Item key={itemIndex} position={[posX, 0.5, posY]} scale={[2, 2, 2]} itemCode={item.item_code} ItemModels={ItemModels} />
+              <Item
+              key={itemIndex}
+              position={itemPositionScaleMap[item.item_code].position}
+              scale={itemPositionScaleMap[item.item_code].scale}
+              itemCode={item.item_code}
+              ItemModels={ItemModels}
+            />
             );
+
           })
         )}
+
+        <group position={[-5, 6, 12]}> {/* Adjust position as needed */}
+              {/* Whiteboard */}
+              <mesh>
+                <boxBufferGeometry args={[5, 3, 0.1]} />
+                <meshStandardMaterial color="white" />
+              </mesh>
+              {/* Inventory header text */}
+              <Text
+                position={[0, 1.1, 0.1]}
+                fontSize={0.3}
+                fontWeight={900}
+                color="black"
+                anchorX="center"
+                anchorY="middle"
+              >
+                Inventory
+              </Text>
+          {/* Text for inventory items */}
+          {roomGrid && roomGrid.map((room, roomIndex) =>
+            room.players_list.map((player, playerIndex) => (
+              <React.Fragment key={`player-inventory-${roomIndex}-${playerIndex}`}>
+            {player.inventory.map((item, itemIndex) => {
+              const row = Math.floor(itemIndex / maxItemsPerRow);
+              const col = itemIndex % maxItemsPerRow;
+              const x = -2 + col * itemSpacing; // Adjust x position based on column
+              const y = 1.5 - row * itemSpacing; // Adjust y position based on row
+
+              return (
+                <Text
+                  key={`inventory-item-${roomIndex}-${playerIndex}-${itemIndex}`}
+                  position={[x, y, 0.2]} // Adjust position on the whiteboard
+                  fontSize={0.2}
+                  color="black"
+                  anchorX="left"
+                  anchorY="middle"
+                >
+                  {item} {/* Assuming the item is a string */}
+                </Text>
+              );
+            })}
+          </React.Fragment>
+        ))
+      )}
+    </group>
         {cellClicked && addPlayerInputComponent}
         <CanvasFrame boxRef={boxRef} />
         <CanvasEffect navigate={navigate} />
       </Canvas>
     </div>
+  );
+};
+
+const Item = ({ position, scale, itemCode, ItemModels }) => {
+  const modelRef: MutableRefObject<Group | null> = useRef(null);
+  useEffect(() => {
+    if (modelRef.current && itemCode) {
+      const loader = new GLTFLoader();
+      console.log("found a new item WORKS", itemCode)
+      loader.load(ItemModels[itemCode], (gltf) => {
+        console.log(gltf)
+        console.log("Model loaded successfully")
+        modelRef.current?.add(gltf.scene);
+      });
+    }
+  }, [itemCode]);
+
+  return (
+    <group ref={modelRef} position={position} scale={scale} />
   );
 };
 
@@ -215,7 +299,7 @@ const useFetchRoomGrid = (roomId, setRoomGrid, dependency, setDependency) => {
       } catch (error) {
         console.error('Error fetching room grid data:', error);
       }
-      console.log("fetchroom", dependency)
+      // console.log("fetchroom", dependency)
     };
     if(dependency){
       fetchRoomGrid();
@@ -252,7 +336,7 @@ const usePositionEntities = (roomGrid, cellSize, padding) => {
             item.position.y = itemposY;
         });
 
-        console.log(roomGrid);
+        // console.log(roomGrid);
       }
     };
     positionEntities();
@@ -268,7 +352,7 @@ const currentTurnTimer = (setCountdown, setTurnEnded) => {
         if (prevCountdown === 0) {
           clearInterval(countdownTimer);
           setTurnEnded(true);
-          console.log('Turn ended. Countdown reached 0.');
+          // console.log('Turn ended. Countdown reached 0.');
           return 0;
         } else {
           return prevCountdown - 1;
@@ -293,12 +377,8 @@ const roomUpdateLogic = (countdown, simulating, setSimulating, setCountdown, set
 
       // Update the UI to indicate simulation
       setTimeout(async () => {
-        console.log('Simulation ongoing.');
-        // Update room data after simulation
         // await updateRoom(roomId);
 
-
-        console.log('Room updated after simulation');
         // End simulation
         setSimulating(false);
         // Increment turn

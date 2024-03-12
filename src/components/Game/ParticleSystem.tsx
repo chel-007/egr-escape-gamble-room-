@@ -4,7 +4,7 @@ import * as THREE from 'three';
 const ParticleSystem = ({ particleSystem }) => {
   useEffect(() => {
     if (particleSystem.current) {
-      const particles = 10000;
+      const particles = 1000;
       const geometry = new THREE.BufferGeometry();
 
       const positions: number[] = [];
