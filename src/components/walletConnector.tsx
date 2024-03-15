@@ -40,6 +40,7 @@ export default function WalletConnector(props: { isTxnInProgress?: boolean }) {
                     }
                   );
                   const data = await response.json();
+                  console.log(data);
                   if (data.error_code === 'account_not_found') {
                     await initializeAccount();
                   }
@@ -54,7 +55,7 @@ export default function WalletConnector(props: { isTxnInProgress?: boolean }) {
         if (!connected || !account || props.isTxnInProgress || isFaucetLoading) return;
         setIsFaucetLoading(true);
 
-        const faucetClient = new FaucetClient(Network.RANDOMNET, "https://fullnode.random.aptoslabs.com");
+        const faucetClient = new FaucetClient(Network.RANDOMNET, "https://faucet.random.aptoslabs.com/");
         try {
           await faucetClient.fundAccount(account.address, 1);
         } catch (error) {
@@ -120,20 +121,20 @@ export default function WalletConnector(props: { isTxnInProgress?: boolean }) {
                 <div className={classes.loginText}>connect</div>
             </div>
               </DialogTrigger>
-              <DialogContent style={{width: '20%', backgroundColor: 'black', position: 'absolute', }}>
+              <DialogContent style={{width: '20%', backgroundColor: 'black', position: 'absolute', right: '0', height: '100%', zIndex: '10' }}>
                 <DialogHeader>
                   <DialogTitle style={{color: 'white', fontSize: '20px', fontFamily: 'Lato', textAlign: 'center'}}>Connect your wallet</DialogTitle>
                   {wallets.map((wallet) => (
                   <div style={{marginLeft: '10%', alignItems: 'center', display: 'flex', flexDirection: 'row', gap: '10%'}} key={wallet.name} className="flex w-full items-center justify-between rounded-xl p-2">
-                    <h1 style={{color: '#586b90', fontFamily: 'Lato', fontSize: '20px'}}>{wallet.name}</h1>
+                    <h1 style={{color: '#586b90', fontFamily: 'Lato', fontSize: '20px', width: '40%'}}>{wallet.name}</h1>
                     {wallet.readyState === WalletReadyState.Installed ? (
-                    <button style={{  width: '100px', height: '35px', borderRadius: '10px', backgroundColor: '#fdd800', cursor: 'pointer'}} 
+                    <button style={{  width: '100px', height: '35px', borderRadius: '10px', backgroundColor: '#fdd800', cursor: 'pointer', border: '2px solid #d4d1d8'}} 
                       onClick={() => connect(wallet.name)}>
                         Connect
                     </button>
                     ) : (
                     <a href={wallet.url} target="_blank">
-                      <button style={{  width: '100px', height: '35px', borderRadius: '10px', backgroundColor: '#fdd800', cursor: 'pointer'}} >Install</button>
+                      <button style={{  width: '100px', height: '35px', borderRadius: '10px', backgroundColor: '#fdd800', cursor: 'pointer', border: '2px solid #d4d1d8'}} >Install</button>
                     </a>
                     )}
                 </div>

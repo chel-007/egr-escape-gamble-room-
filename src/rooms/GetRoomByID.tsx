@@ -21,7 +21,7 @@ const GetRoomByID = ({ rooms, setDetailedRooms, setIsLoading }) => {
             for (let i = 0; i < newRoom.length; i++) {
             const detailedRoom = await aptosClient.view({
             payload: {
-                function: `${'0xc0a4a8ac1b69d25e7595f69d04580ca77f3d604e235ca4f89dc97b156a61ef30'}::dapp::get_room`,
+                function: `${'0xe5385db1465ff28c87f06296801e4861e238e8927c917e0af5d22151422dd495'}::dapp::get_room`,
                 functionArguments: [newRoom[i].id.toString()],
             },
         });
@@ -30,7 +30,7 @@ const GetRoomByID = ({ rooms, setDetailedRooms, setIsLoading }) => {
     }
         
         setDetailedRooms(detailedRooms.flat());
-        // console.log(detailedRooms);
+        console.log(detailedRooms);
 
             } catch (error) {
                 console.error('Error fetching room list:', error);

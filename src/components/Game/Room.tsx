@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { Aptos, AptosConfig, MoveValue, Network } from "@aptos-labs/ts-sdk";
 import { Text } from '@react-three/drei';
 import ParticleSystem from './ParticleSystem';
-import { MeshBasicMaterial, Material, Group } from 'three';
+import { MeshBasicMaterial, MeshStandardMaterial, Material, Group } from 'three';
 import {
   useWallet,
 } from "@aptos-labs/wallet-adapter-react";
@@ -17,8 +17,11 @@ import './Room.css';
 import useAddPlayerInput from './AddPlayerInput';
 import WalletConnector from '../walletConnector';
 import { useLoader } from '@react-three/fiber';
-// import { GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { TextureLoader } from 'three';
+import Toast from '../../components/ui/new-toast'
+import holeImage from '../../assets/hole.png'
+import boxImage from '../../assets/box.png'
 
 
 interface RoomGridItem {
@@ -33,15 +36,32 @@ const Room = ({ roomId }) => {
   const [roomGrid, setRoomGrid] = useState<RoomGridItem[] | null>(null);
   const [playerPosition, setPlayerPosition] = useState<{ x: number; y: number } | null>(null);
   const particleSystem = useRef<THREE.Mesh>(null);
-  const [turn, setTurn] = useState(1);
-  const [countdown, setCountdown] = useState(20);
+
+  const gameStateString = localStorage.getItem('gameState');
+  const gameState = gameStateString ? JSON.parse(gameStateString) : {};
+  const [turn, setTurn] = useState(gameState.turn || 1);
+  const [countdown, setCountdown] = useState(gameState.countdown || 50);
+  //const [turnEnded, setTurnEnded] = useState(gameState.turnEnded || false);
+  const [simulating, setSimulating] = useState(gameState.simulating || false);
+  const [dependency, setDependency] = useState(gameState.dependency || true)
   const [turnEnded, setTurnEnded] = useState(false);
-  const [simulating, setSimulating] = useState(false);
-  const [dependency, setDependency] = useState(true)
+  // const [simulating, setSimulating] = useState(false);
   const [cellClicked, setCellClicked] = useState(false);
   const [addPlayerInputComponent, setAddPlayerInputComponent] = useState(null);
+  const [roomActive, setRoomActive] = useState(false);
+  const [toastVisible, setToastVisible] = useState(false);
+  const [selectedItems, setSelectedItems] = useState([]);
 
   const { account, connected, signAndSubmitTransaction } = useWallet();
+  const loader = new TextureLoader();
+  const holeTexture = loader.load(holeImage);
+  const boxTexture = loader.load(boxImage);
+
+const geometry = new THREE.PlaneGeometry(1, 1); // Adjust the size as needed
+
+const material = new THREE.MeshBasicMaterial({ map: holeTexture });
+const meshNew = new THREE.Mesh(geometry, material);
+meshNew.position.set(0, 0, 0);
 
   // const memoizedSetCountdown = useCallback((value) => setCountdown(value), []);
   // const memoizedSetTurnEnded = useCallback((value) => setTurnEnded(value), []);
@@ -50,32 +70,49 @@ const Room = ({ roomId }) => {
   const navigate = useNavigate();
   const cellSize = 1;
   const padding = 0.1;
-  const maxItemsPerRow = 4;
-  const itemSpacing = 0.3;
+  const maxItemsPerRow = 3;
+  const itemSpacing = 1.5;
   const hoverColor = '#FFFF00'; 
   const defaultColor = '#FFFFFF';
   const playerAddress = account?.address;
 
   const ItemModels = {
+    1: '../../assets/hole.glb',
     2: '../../assets/box2.glb',
     3: '../../assets/new.glb',
-    4: '../../assets/new.glb', 
+    4: '../../assets/box.glb', 
+    5: '../../assets/potion.glb', 
   };
   
   // Create a reference for the grid
   const gridRef = useRef<Mesh>(null);
   // const modelRef = useRef(null);
-  
-  // console.log(dependency)
 
   useFetchRoomGrid(roomId, setRoomGrid, dependency, setDependency);
   usePositionEntities(roomGrid, cellSize, padding);
-  currentTurnTimer(setCountdown, setTurnEnded);
-  roomUpdateLogic(countdown, simulating, setSimulating, setCountdown, setTurn, setDependency)
+  currentTurnTimer(setCountdown, setTurnEnded, roomActive);
+
+  roomUpdateLogic(countdown, simulating, setSimulating, setCountdown, 
+    setTurn, setDependency, turn, dependency,
+    setTurnEnded, roomActive, setToastVisible
+    )
+
+  useEffect(() => {
+    // Call checkRoomStatus initially
+    checkRoomStatus(roomId, setRoomActive);
+  
+    // Start polling every 10 seconds
+    const interval = setInterval(() => {
+      checkRoomStatus(roomId, setRoomActive);
+    }, 10000);
+  
+    // Clear the interval on component unmount
+    return () => clearInterval(interval);
+  }, [roomId, checkRoomStatus]);
 
   return (
     <div className="room-container">
-      {location.pathname === `/room` && (
+      {roomActive && location.pathname === `/room` && (
       <div className="ui-container">
         {simulating ? (
           <>
@@ -91,11 +128,33 @@ const Room = ({ roomId }) => {
         </div>
       )}
 
-      {playerAddress == undefined && (
+      {!roomActive && location.pathname === `/room` && (
+        <div className='game-lobby'>
+          <div className="ui-container">
+            <>
+              <div className="simulating-info">Waiting...</div>
+              <div className="countdown">Game Lobby</div>
+            </>
+          </div>
+          <div className='room-status'>
+            <p style={{fontFamily: 'Lato', fontSize: '25px'}}>Waiting for the Room to be Filled!</p>
+          </div>
+          </div>
+      )}
+
+        {toastVisible && (
+            <Toast
+            title="Rooms Fetched"
+            description="Rooms have been successfully fetched."
+        />
+        )}
+
+      {playerAddress == undefined && location.pathname === `/room` && (
       <div className='connect-wallet'>
       <WalletConnector />
       </div>
       )}
+      {roomActive && location.pathname === `/room` && (
       <Canvas
         camera={{ position: [-2, 6, 23], rotation: [-Math.PI / 4, Math.PI / 4, 0] }}
       >
@@ -111,7 +170,6 @@ const Room = ({ roomId }) => {
         <color attach="background" args={['black']} />
         <ambientLight intensity={0.5} />
         <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
-
         {/* Particle system for space background */}
         <mesh ref={particleSystem}>
           <sphereGeometry args={[50, 32, 32]} /> {/* Decrease the radius from 100 to 50 */}
@@ -133,7 +191,7 @@ const Room = ({ roomId }) => {
                 onClick={() => 
                 handleCellClick(row, col, roomGrid, playerAddress,
                 roomId, signAndSubmitTransaction, turnEnded, countdown,
-                setAddPlayerInputComponent, simulating)} // Handle click
+                setAddPlayerInputComponent, simulating, setToastVisible)} // Handle click
               />
             ))
           )}
@@ -191,8 +249,11 @@ const Room = ({ roomId }) => {
 
             const itemPositionScaleMap = {
               0: { position: [posX, 0.1, posY], scale: [1, 1, 1] },
+              1: { position: [posX, 0.1, posY], scale: [0.3, 0.4, 0.3] },
               2: { position: [posX, 0, posY], scale: [1, 1, 1] },
               3: { position: [posX, 0.4, posY], scale: [2, 2, 2] }, 
+              4: { position: [posX, 0.1, posY], scale: [1, 1, 1] }, 
+              5: { position: [posX, 0.5, posY], scale: [4, 3, 4] }, 
             };
 
             return (
@@ -209,55 +270,93 @@ const Room = ({ roomId }) => {
           })
         )}
 
-        <group position={[-5, 6, 12]}> {/* Adjust position as needed */}
-              {/* Whiteboard */}
-              <mesh>
-                <boxBufferGeometry args={[5, 3, 0.1]} />
-                <meshStandardMaterial color="white" />
-              </mesh>
-              {/* Inventory header text */}
+<group position={[-1, 6, 12]}>
+  {/* Whiteboard */}
+  <mesh>
+    <boxBufferGeometry args={[5, 3, 0.1]} />
+    <meshStandardMaterial color="white" />
+  </mesh>
+  {/* Inventory header text */}
+  <Text
+    position={[0, 1.1, 0.1]}
+    fontSize={0.3}
+    fontWeight={900}
+    color="black"
+    anchorX="center"
+    anchorY="middle"
+  >
+    Inventory
+  </Text>
+  {/* Text for inventory items */}
+  {roomGrid &&
+    roomGrid
+      // Filter roomGrid to get the player's inventory only
+      .filter(room => room.players_list.some(player => player.address === playerAddress))
+      .map((room, roomIndex) =>
+        room.players_list
+          .filter(player => player.address === playerAddress)
+          .map((player, playerIndex) => (
+            <React.Fragment key={`player-inventory-${roomIndex}-${playerIndex}`}>
+              {player.inventory.map((item, itemIndex) => {
+                const row = Math.floor(itemIndex / maxItemsPerRow);
+                const col = itemIndex % maxItemsPerRow;
+                const x = -1.5 + col * itemSpacing; // Adjust x position based on column
+                const y = 0.2 - row * itemSpacing; // Adjust y position based on row
+
+                // const itemCodeNames = {
+                //   1: 'Hole',
+                //   2: 'Clean Box',
+                //   3: 'Box',
+                //   4: 'Tele',
+                //   5: 'Potion'
+                // };
+
+                const texture = getItemImage(item, holeTexture, boxTexture);
+                // texture.repeat.set(2, 2);
+                texture.colorSpace = THREE.sRGBEncoding;
+
+                return (
+                  <InventoryItem
+                  key={`inventory-item-${roomIndex}-${playerIndex}-${itemIndex}`}
+                  boxTexture={boxTexture}
+                  holeTexture={holeTexture}
+                  item={item}
+                  position={[x, y, 0.2]}
+                  onClick={() => handleItemClick(item, setSelectedItems, selectedItems)}
+                />
+                );
+              })}
+            </React.Fragment>
+          ))
+      )}
+
+      {selectedItems.length === 2 && (
+            <mesh
+              position={[0, -3, 0]}
+              onClick={handleCraftButtonClick}
+            >
+              <planeBufferGeometry args={[3, 1]} />
+              <meshStandardMaterial color="blue" />
               <Text
-                position={[0, 1.1, 0.1]}
+                position={[0, 0, 0.1]}
                 fontSize={0.3}
-                fontWeight={900}
-                color="black"
+                color="white"
                 anchorX="center"
                 anchorY="middle"
               >
-                Inventory
+                Craft
               </Text>
-          {/* Text for inventory items */}
-          {roomGrid && roomGrid.map((room, roomIndex) =>
-            room.players_list.map((player, playerIndex) => (
-              <React.Fragment key={`player-inventory-${roomIndex}-${playerIndex}`}>
-            {player.inventory.map((item, itemIndex) => {
-              const row = Math.floor(itemIndex / maxItemsPerRow);
-              const col = itemIndex % maxItemsPerRow;
-              const x = -2 + col * itemSpacing; // Adjust x position based on column
-              const y = 1.5 - row * itemSpacing; // Adjust y position based on row
-
-              return (
-                <Text
-                  key={`inventory-item-${roomIndex}-${playerIndex}-${itemIndex}`}
-                  position={[x, y, 0.2]} // Adjust position on the whiteboard
-                  fontSize={0.2}
-                  color="black"
-                  anchorX="left"
-                  anchorY="middle"
-                >
-                  {item} {/* Assuming the item is a string */}
-                </Text>
-              );
-            })}
-          </React.Fragment>
-        ))
-      )}
-    </group>
+            </mesh>
+          )}
+</group>;
         {cellClicked && addPlayerInputComponent}
         <CanvasFrame boxRef={boxRef} />
-        <CanvasEffect navigate={navigate} />
       </Canvas>
+      )}
+       <CanvasEffect navigate={navigate} />
     </div>
+
+
   );
 };
 
@@ -266,10 +365,10 @@ const Item = ({ position, scale, itemCode, ItemModels }) => {
   useEffect(() => {
     if (modelRef.current && itemCode) {
       const loader = new GLTFLoader();
-      console.log("found a new item WORKS", itemCode)
+      // console.log("found a new item WORKS", itemCode)
       loader.load(ItemModels[itemCode], (gltf) => {
-        console.log(gltf)
-        console.log("Model loaded successfully")
+        // console.log(gltf)
+        // console.log("Model loaded successfully")
         modelRef.current?.add(gltf.scene);
       });
     }
@@ -280,6 +379,137 @@ const Item = ({ position, scale, itemCode, ItemModels }) => {
   );
 };
 
+
+const getItemImage = (itemCode, holeTexture, boxTexture) => {
+  if(itemCode == 1) {
+      return holeTexture;
+  }
+    else if(itemCode == 3){
+      return boxTexture
+    }
+  };
+
+  const handleItemClick = (selectedItem, setSelectedItems, selectedItems) => {
+    // Check if the selected item is already in the list
+    if (!selectedItems.includes(selectedItem)) {
+      // Add the selected item to the list
+      setSelectedItems([...selectedItems, selectedItem]);
+    } else {
+      // Remove the selected item from the list if it's already selected
+      setSelectedItems(selectedItems.filter(item => item !== selectedItem));
+    }
+  };
+
+const InventoryItem = ({ item, position, onClick, holeTexture, boxTexture }) => {
+    const [isSelected, setIsSelected] = useState(false);
+    const [isItemHovered, setIsItemHovered] = useState(false);
+
+    const meshRef = useRef<Mesh>(null);
+
+    const itemCodeNames = {
+      1: 'Hole',
+      2: 'Clean Box',
+      3: 'Box',
+      4: 'Tele',
+      5: 'Potion'
+    };
+
+    
+    const texture = getItemImage(item, holeTexture, boxTexture);
+    // texture.repeat.set(2, 2);
+    texture.colorSpace = THREE.sRGBEncoding;
+  
+    // Function to handle click event
+    const handleClick = () => {
+      setIsSelected(!isSelected); // Toggle the selection state
+      onClick(item); // Call the onClick function passed from the parent component
+    };
+
+    const handleMouseEnter = () => {
+      setIsItemHovered(true);
+  if (meshRef.current && meshRef.current.material instanceof MeshStandardMaterial) {
+    meshRef.current.material.color.set(0xff00ff); // Change color when hovered
+    document.body.style.cursor = 'pointer'; // Change cursor to pointer
+  }
+    };
+  
+    const handleMouseLeave = () => {
+      setIsItemHovered(false);
+      if (meshRef.current && meshRef.current.material instanceof MeshStandardMaterial) {
+        meshRef.current.material.color.set(0xffffff); // Change color when hovered
+        document.body.style.cursor = 'auto'; // Change cursor to pointer
+      }
+    };
+  
+    return (
+      <React.Fragment>
+        <mesh position={position} 
+        onClick={handleClick}
+        onPointerEnter={handleMouseEnter} // Handle mouse enter event
+        onPointerLeave={handleMouseLeave} // Handle mouse leave event
+        ref={meshRef}
+        >
+          <planeBufferGeometry args={[1, 1]} />
+          <meshStandardMaterial
+            map={texture}
+            color={isSelected ? 'darkgray' : 'white'} // Change color based on selection state
+            transparent={true}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+        {/* Position the text slightly below the item */}
+        <Text
+          position={[position[0], position[1] - 0.6, position[2]]} // Adjust Y position to be slightly below the item
+          fontSize={0.2}
+          color="black"
+          anchorX="center"
+          anchorY="middle"
+        >
+          {itemCodeNames[item]}
+        </Text>
+      </React.Fragment>
+    );
+  };
+
+const handleCraftButtonClick = () => {
+    console.log("time to craft")
+};
+
+const checkRoomStatus = (roomId, setRoomActive) => {
+  const config = new AptosConfig({ network: Network.RANDOMNET });
+  const aptosClient = new Aptos(config);
+
+  const checkRoom = async () => {
+    try {
+      const checkRoomResponse = await aptosClient.view({
+        payload: {
+          function: `${'0xe5385db1465ff28c87f06296801e4861e238e8927c917e0af5d22151422dd495'}::dapp::get_room`,
+          functionArguments: [roomId.toString()],
+        },
+      });
+
+      const room = checkRoomResponse[0] as { active?: boolean }; // Type assertion
+
+      if (room && room.active == true) {
+        // console.log(room.active);
+        setRoomActive(true);
+      } else {
+        console.log(room);
+        localStorage.removeItem('gameState');
+      }
+    } catch (error) {
+      console.error('Error checking room status:', error);
+    }
+  };
+
+  checkRoom();
+};
+
+
+
+
+
+
 const useFetchRoomGrid = (roomId, setRoomGrid, dependency, setDependency) => {
   const config = new AptosConfig({ network: Network.RANDOMNET });
   const aptosClient = new Aptos(config);
@@ -289,7 +519,7 @@ const useFetchRoomGrid = (roomId, setRoomGrid, dependency, setDependency) => {
       try {
         const roomGrid = await aptosClient.view({
           payload: {
-            function: `${'0xc0a4a8ac1b69d25e7595f69d04580ca77f3d604e235ca4f89dc97b156a61ef30'}::dapp::get_room`,
+            function: `${'0xe5385db1465ff28c87f06296801e4861e238e8927c917e0af5d22151422dd495'}::dapp::get_room`,
             functionArguments: [roomId.toString()],
           },
         });
@@ -343,7 +573,7 @@ const usePositionEntities = (roomGrid, cellSize, padding) => {
   }, [roomGrid]);
 };
 
-const currentTurnTimer = (setCountdown, setTurnEnded) => {
+const currentTurnTimer = (setCountdown, setTurnEnded, roomActive) => {
   useEffect(() => {
     let countdownTimer: ReturnType<typeof setInterval> | undefined = undefined;
 
@@ -360,56 +590,128 @@ const currentTurnTimer = (setCountdown, setTurnEnded) => {
       });
     };
 
+if (roomActive) {
     countdownTimer = setInterval(handleCountdown, 1000);
 
     return () => clearInterval(countdownTimer);
-  }, [setCountdown, setTurnEnded]);
+}
+  }, [setCountdown, setTurnEnded, roomActive]);
 };
 
-const roomUpdateLogic = (countdown, simulating, setSimulating, setCountdown, setTurn, setDependency) => {
+const roomUpdateLogic = (countdown,
+   simulating, setSimulating, setCountdown, setTurn,
+    setDependency, turn, dependency, setTurnEnded, roomActive, setToastVisible) => {
+
+      useEffect(() => {
+        const gameStateString = localStorage.getItem('gameState');
+        if (gameStateString !== null) {
+          const gameState = JSON.parse(gameStateString);
+          const lastUpdated = gameState.lastUpdated || Date.now();
+          let elapsedTime = Date.now() - lastUpdated;
+      
+          // Calculate the current turn based on elapsed time and stored countdown
+          let currentTurn = gameState.turn || 1;
+          let remainingTime = gameState.countdown || 20;
+          let isSimulating = gameState.simulating || false;
+      
+          // Deduct the remaining countdown from the elapsed time
+          elapsedTime -= (30 - remainingTime) * 1000; // Convert seconds to milliseconds
+      
+          // Increment turns for each 20-second block
+          while (elapsedTime >= 30 * 1000) {
+            currentTurn++;
+            elapsedTime -= 30 * 1000;
+          }
+      
+          // If the remaining time is less than or equal to 10 seconds, start simulating
+          if (remainingTime <= 10) {
+            isSimulating = true;
+            // If it ends during simulation, increment the turn
+            if (remainingTime === 0) {
+              currentTurn++;
+              remainingTime = 20; // Reset countdown for the next turn
+            }
+          }
+      
+          // Update state values
+          setTurn(currentTurn);
+          setCountdown(remainingTime);
+          setSimulating(isSimulating);
+          setDependency(gameState.dependency || true);
+        } else {
+          // No gameState found, initialize with default values
+          setTurn(1);
+          setCountdown(20);
+          setSimulating(false);
+          setDependency(true);
+        }
+      }, []);
+      
+  
+  
+  
+
   useEffect(() => {
     if (countdown === 0 && !simulating) {
+      console.log("ive been run agn")
       // Start simulation
       setSimulating(true);
       setCountdown(10);
       console.log('Simulation started...');
-      setDependency(true)
+      setDependency(true);
 
       // Update the UI to indicate simulation
-      setTimeout(async () => {
-        // await updateRoom(roomId);
+      setTimeout(() => {
+        // End simulation
+        setSimulating(false);
+        setToastVisible(false)
+        // Increment turn
+        setTurn(prevTurn => prevTurn + 1);
+        setDependency(false);
+        // Start countdown for the next turn
+        setCountdown(20);
+       // currentTurnTimer(setCountdown, setTurnEnded, roomActive)
+      }, 10000); // Simulate for 10 seconds
+    }
+    
+    // Update local storage with current game state and lastUpdated time
+    localStorage.setItem('gameState', JSON.stringify({ countdown, simulating, turn, dependency, lastUpdated: Date.now() }));
+  }, [countdown, simulating, setSimulating, setCountdown, setTurn, setDependency]);
 
+  useEffect(() => {
+    if (countdown === 0 && simulating) {
         // End simulation
         setSimulating(false);
         // Increment turn
         setTurn(prevTurn => prevTurn + 1);
-        setDependency(false)
-        // Start countdown for the next turn
+        setDependency(false);
         setCountdown(20);
-      }, 10000); // Simulate for 10 seconds
     }
-  }, [countdown, simulating, setSimulating, setCountdown, setTurn]);
+    localStorage.setItem('gameState', JSON.stringify({ countdown, simulating, turn, dependency, lastUpdated: Date.now() }));
+  }, [countdown, simulating, setSimulating, setCountdown, setTurn, setDependency]);
 
-  const updateRoom = (roomId) => {
-    const config = new AptosConfig({ network: Network.RANDOMNET });
-    const aptosClient = new Aptos(config);
-  
-    useEffect(() => {
-      const updatingRoom = async () => {
-        try {
-          const update = await aptosClient.view({
-            payload: {
-              function: `${'0xc0a4a8ac1b69d25e7595f69d04580ca77f3d604e235ca4f89dc97b156a61ef30'}::dapp::update_room`,
-              functionArguments: [roomId.toString()],
-            },
-          });
-        } catch (error) {
-          console.error('Error Updating Room:', error);
-        }
-      };
-    }, []);
-  };
 };
+
+
+// const updateRoom = (roomId) => {
+//   const config = new AptosConfig({ network: Network.RANDOMNET });
+//   const aptosClient = new Aptos(config);
+
+//   useEffect(() => {
+//     const updatingRoom = async () => {
+//       try {
+//         const update = await aptosClient.view({
+//           payload: {
+//             function: `${'0xc0a4a8ac1b69d25e7595f69d04580ca77f3d604e235ca4f89dc97b156a61ef30'}::dapp::update_room`,
+//             functionArguments: [roomId.toString()],
+//           },
+//         });
+//       } catch (error) {
+//         console.error('Error Updating Room:', error);
+//       }
+//     };
+//   }, []);
+// };
 
 
 
@@ -450,13 +752,18 @@ const handleCellHover = (gridRef, row: number, col: number, hoverColor: string, 
   });
 };
 
-const handleCellClick = (row: number, col: number, roomGrid, playerAddress, roomId, signAndSubmitTransaction, turnEnded, countdown, setAddPlayerInputComponent, simulating) => {
+const handleCellClick = (row: number, col: number, roomGrid, playerAddress, roomId, signAndSubmitTransaction, turnEnded, countdown, setAddPlayerInputComponent, simulating, setToastVisible) => {
   // if (turnEnded) {
   //   alert('Current turn has ended. You cannot make a move now.');
   //   return;
   // }
   if (simulating) {
-    alert('Simulation in progress. Cannot make a move.');
+    setToastVisible(true)
+    return;
+  }
+
+  if(playerAddress == undefined){
+    alert("You need to connect your wallet first!");
     return;
   }
   
@@ -504,14 +811,28 @@ const getPlayerPosition = (roomGrid: RoomGridItem[] | null, playerAddress: strin
   }
   const playerPosition = currentPlayer.players_list.find(player => player.address === playerAddress)?.position;
 
-  // console.log(playerPosition)
+  console.log("playerPosition", playerPosition)
 
   if (!playerPosition) {
     return null;
   }
   const row = parseInt(playerPosition.x);
-  const dummycol = parseInt(playerPosition.y);
-  const col = dummycol - 1;
+const dummycol = Math.ceil(parseFloat(playerPosition.y));
+console.log(dummycol);
+
+let col;
+if(dummycol == 0){
+  col = 0;
+}
+else if (dummycol > 11){
+  col = dummycol - 2;
+}
+else{
+  col = dummycol - 1;
+}
+// const col = dummycol - 1;
+
+console.log(col);
   return { row, col };
 };
 

@@ -15,6 +15,9 @@ const ActiveGame = () => {
       // setActiveRoomId(null)
       setActiveRoomId(storedRoomId);
     }
+    // if(!storedRoomId){
+    //   localStorage.setItem('activeRoomId', '0');
+    // }
   }, []);
 
   const clearStoredRoomId = () => {

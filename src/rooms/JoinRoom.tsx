@@ -15,7 +15,7 @@ const JoinRoom = ({ detailedRoom, roomId, setIsLoading }) => {
 
     const payload: Types.TransactionPayload = {
       type: "entry_function_payload",
-      function: `${'0xc0a4a8ac1b69d25e7595f69d04580ca77f3d604e235ca4f89dc97b156a61ef30'}::dapp::add_player`,
+      function: `${'0xe5385db1465ff28c87f06296801e4861e238e8927c917e0af5d22151422dd495'}::dapp::add_player`,
       type_arguments: [],
       arguments: [
         account?.address,
@@ -27,6 +27,7 @@ const JoinRoom = ({ detailedRoom, roomId, setIsLoading }) => {
       let response = await signAndSubmitTransaction(payload);
 
       if (response.success) {
+        console.log("setJoined should be true")
         setIsJoined(true);
         localStorage.setItem('activeRoomId', roomId);
       }
@@ -36,11 +37,6 @@ const JoinRoom = ({ detailedRoom, roomId, setIsLoading }) => {
         alert("Connect Wallet before trying to Join Room");
       }
       setIsJoined(false);
-    } finally {
-      setIsJoined(true);
-      console.log(isJoined);
-      setIsPending(false);
-      setIsLoading(false);
     }
   };
 

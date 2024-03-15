@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import type { FC } from 'react';
 import resets from '../_resets.module.css';
 import classes from './Dashboard.module.css';
@@ -11,6 +11,11 @@ import { ProfileBgIcon } from './ProfileBgIcon';
 import { SpectateIcon } from './SpectateIcon';
 import { StarIcon } from './StarIcon';
 import { VectorIcon } from './VectorIcon';
+import { Alert, AlertTitle, AlertDescription } from '../ui/alert'
+import { ToastAction } from "../ui/toast";
+import { useToast } from "../ui/use-toast";
+import Toast from "../ui/new-toast"; 
+import logo from '../../assets/egr.png'
 import GameOption from './GameOption';
 import GetRoomList from '../../rooms/GetRoomList';
 import CreateRoom from "../../rooms/CreateRoom"; 
@@ -42,13 +47,15 @@ export const Dashboard: FC<Props> = memo(function Dashboard(props = {}) {
   const [selectedGame, setSelectedGame] = useState(0);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [detailedRooms, setDetailedRooms] = useState<Room[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [IsLoading, setIsLoading] = useState(false);
   const [txnInProgress, setTxnInProgress] = useState(false);
   const [activeOption, setActiveOption] = useState('JOIN ROOM');
 
-  const { connected, account } = useWallet();
+  const { isLoading, connected, account, network } = useWallet();
 
-  // console.log(account)
+  console.log(network?.name)
+
+  const { toast } = useToast();
 
   const handleOptionClick = (option) => {
     setActiveOption(option);
@@ -64,6 +71,20 @@ export const Dashboard: FC<Props> = memo(function Dashboard(props = {}) {
     { name: "Escape Room", icon: EscaperoomIconIcon },
     { name: "Duels", icon: EscaperoomIconIcon },
   ];
+
+  // useEffect(() => {
+  //   if (true) {
+  //     console.log("toast will run")
+  //     const { id, update } = toast({
+  //       title: "Wallet connected!",
+  //       description: "Your wallet is connected and ready to use.",
+  //       duration: 5000,
+  //     });
+      
+  //     // Update the toast to show it
+  //     update({ id, open: true });
+  //   }
+  // }, [connected, toast]);
   
   // console.log(rooms)
   // console.log(detailedRooms)
@@ -75,6 +96,7 @@ export const Dashboard: FC<Props> = memo(function Dashboard(props = {}) {
       <div className={classes.sideNavBG}>
         <div className={classes.profileBG}>
           <ProfileBgIcon className={classes.icon} />
+          <img src={logo} className={classes.logo} />
         </div>
 
         <div className={classes.gameOptionsCont}>
@@ -90,7 +112,12 @@ export const Dashboard: FC<Props> = memo(function Dashboard(props = {}) {
         </div> {/*End of div with class gameOptionsCont. */}
       </div> {/*End of div with class sideNav. */}
 
-  
+      {connected && network && network.name.toString() !== "RandomNet" && (
+        <Toast title="Wrong Network" description="Please switch your network to RandomNet to use this app!" />
+      )}
+      
+
+          
 
     
 {selectedGame === 0 && (
@@ -133,7 +160,7 @@ export const Dashboard: FC<Props> = memo(function Dashboard(props = {}) {
                 {activeOption === 'JOIN ROOM' && (
                   <>
                     <GetRoomList setRooms={setRooms} setIsLoading={setIsLoading} />
-                    {isLoading ? (
+                    {IsLoading ? (
                       <div className={classes.roomBg}>
                         <div className={classes.roomId}>...</div>
                         <div className={classes.roomCreator}>...</div>
@@ -154,10 +181,10 @@ export const Dashboard: FC<Props> = memo(function Dashboard(props = {}) {
                           <div className={classes.roomId}>{room.active.toString()}</div>
                           <div className={classes.roomStatus}>
                             <GetRoomByID key={room.id} rooms={rooms} setIsLoading={setIsLoading} setDetailedRooms={setDetailedRooms} />
-                            {!isLoading &&
+                            {!IsLoading &&
                               detailedRooms.flat().map((detailedRoom) => (
                                 detailedRoom.id === room.id && (
-                                  <JoinRoom detailedRoom={detailedRooms} roomId={detailedRoom.id} setIsLoading={setIsLoading} />
+                                  <JoinRoom key={detailedRoom.id} detailedRoom={detailedRooms} roomId={detailedRoom.id} setIsLoading={setIsLoading} />
                                   
                                 )
                               ))}

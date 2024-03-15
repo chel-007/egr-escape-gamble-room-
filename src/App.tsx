@@ -1,7 +1,6 @@
 import React from 'react';
 import { memo } from 'react';
 import type { FC } from 'react';
-
 import classes from './App.module.css';
 import resets from './components/_resets.module.css';
 import { TV1 } from './components/TV1/TV1';
@@ -12,7 +11,6 @@ import { PetraWallet } from "petra-plugin-wallet-adapter";
 import { MartianWallet } from "@martianwallet/aptos-wallet-adapter";
 import {
   AptosWalletAdapterProvider,
-  useWallet,
 } from "@aptos-labs/wallet-adapter-react";
 
 interface Props {
@@ -21,10 +19,8 @@ interface Props {
 export const App: FC<Props> = memo(function App(props = {}) {
   const wallets = [new PetraWallet(), new MartianWallet()];
 
-  const petraWallet = wallets[0];
-
-  console.log(petraWallet.provider?.account.toString)
-  console.log(petraWallet.provider?.account)
+  console.log(process.env.MODULE_ADDRESS)
+  
   return (
     <AptosWalletAdapterProvider plugins={wallets} autoConnect={true}>
     <Router>
