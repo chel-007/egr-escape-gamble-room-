@@ -12,8 +12,8 @@ const ActiveGame = () => {
     console.log(storedRoomId)
     if (storedRoomId) {
       // clearStoredRoomId();
-      // setActiveRoomId(null)
-      setActiveRoomId(storedRoomId);
+      setActiveRoomId(null)
+      //setActiveRoomId(storedRoomId);
     }
     // if(!storedRoomId){
     //   localStorage.setItem('activeRoomId', '0');

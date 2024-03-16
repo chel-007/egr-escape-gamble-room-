@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
-import { ToastAction } from "../components/ui/toast";
 import Toast from "../components/ui/new-toast";
 // require('dotenv').config();
 const GetRoomList = ({ setRooms, setIsLoading }) => {

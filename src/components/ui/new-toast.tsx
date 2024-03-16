@@ -8,7 +8,7 @@ const Toast = ({ title, description }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setVisible(false);
-    }, 5000); // Hide the toast after 5 seconds
+    }, 10000); // Hide the toast after 5 seconds
 
     return () => clearTimeout(timer);
   }, []);
@@ -26,16 +26,15 @@ const Toast = ({ title, description }) => {
       color: "black",
       zIndex: 10,
       backgroundColor: "#979ba3",
-      height: "10%",
-      width: "26%",
+      width: "30%",
       padding: "2%",
       display: "flex",
-      gap: "5%",
-      borderRadius: "5px",
+      gap: "3%",
+      borderRadius: "4px",
       alignItems: "center",
-      justifyContent: "space-between", // Adjusted to space-between
-      left: "72%",
-      top: "60%",
+      justifyContent: "center",
+      right: "0%",
+      top: "10%",
     }}
   >
     <div
@@ -51,7 +50,7 @@ const Toast = ({ title, description }) => {
       }}
     >
       <div style={{fontWeight: '600'}}>{title}</div>
-      <div style={{ fontStyle: "italic", fontSize: "15.5px", width: '120%', }}>
+      <div style={{ fontStyle: "italic", fontSize: "15.5px" }}>
         {description}
       </div>
     </div>
@@ -62,8 +61,7 @@ const Toast = ({ title, description }) => {
         color: "#979ba3",
         padding: "1.5% 3%",
         borderRadius: "2px",
-        justifyContent: "flex-end",
-        transform: "translateY(-20px) translateX(-35px)",
+        // transform: "translateY(-20px) translateX(-35px)",
         fontSize: '11px'
       }}
       onClick={handleClose}

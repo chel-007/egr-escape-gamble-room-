@@ -49,8 +49,14 @@ const Room = ({ roomId }) => {
   const [cellClicked, setCellClicked] = useState(false);
   const [addPlayerInputComponent, setAddPlayerInputComponent] = useState(null);
   const [roomActive, setRoomActive] = useState(false);
-  const [toastVisible, setToastVisible] = useState(false);
+  const [toast, setToast] = useState({
+    visible: false,
+    title: '',
+    description: ''
+  });
+  // const [toastVisible, setToastVisible] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
+  const [playerId, setPlayerId] = useState<string | null>(null);
 
   const { account, connected, signAndSubmitTransaction } = useWallet();
   const loader = new TextureLoader();
@@ -94,7 +100,7 @@ meshNew.position.set(0, 0, 0);
 
   roomUpdateLogic(countdown, simulating, setSimulating, setCountdown, 
     setTurn, setDependency, turn, dependency,
-    setTurnEnded, roomActive, setToastVisible
+    setTurnEnded, roomActive, setToast
     )
 
   useEffect(() => {
@@ -109,6 +115,22 @@ meshNew.position.set(0, 0, 0);
     // Clear the interval on component unmount
     return () => clearInterval(interval);
   }, [roomId, checkRoomStatus]);
+
+
+  useEffect(() => {
+    const foundPlayer = roomGrid?.find(room => {
+      return room.players_list.some(player => player.address === playerAddress);
+    });
+  
+    if (foundPlayer) {
+      const index = foundPlayer.players_list.findIndex(player => player.address === playerAddress);
+      if (index !== -1) {
+        setPlayerId(index.toString()); // Convert index to string
+        console.log(index.toString())
+      }
+    }
+  }, [roomGrid, playerAddress]);
+  
 
   return (
     <div className="room-container">
@@ -142,12 +164,9 @@ meshNew.position.set(0, 0, 0);
           </div>
       )}
 
-        {toastVisible && (
-            <Toast
-            title="Rooms Fetched"
-            description="Rooms have been successfully fetched."
-        />
-        )}
+        {toast.visible && (
+            <Toast title={toast.title} description={toast.description} />
+          )}
 
       {playerAddress == undefined && location.pathname === `/room` && (
       <div className='connect-wallet'>
@@ -191,7 +210,7 @@ meshNew.position.set(0, 0, 0);
                 onClick={() => 
                 handleCellClick(row, col, roomGrid, playerAddress,
                 roomId, signAndSubmitTransaction, turnEnded, countdown,
-                setAddPlayerInputComponent, simulating, setToastVisible)} // Handle click
+                setAddPlayerInputComponent, simulating, setToast)} // Handle click
               />
             ))
           )}
@@ -321,7 +340,7 @@ meshNew.position.set(0, 0, 0);
                   boxTexture={boxTexture}
                   holeTexture={holeTexture}
                   item={item}
-                  position={[x, y, 0.2]}
+                  position={[x, y, 0.1]}
                   onClick={() => handleItemClick(item, setSelectedItems, selectedItems)}
                 />
                 );
@@ -333,7 +352,7 @@ meshNew.position.set(0, 0, 0);
       {selectedItems.length === 2 && (
             <mesh
               position={[0, -3, 0]}
-              onClick={handleCraftButtonClick}
+              onClick={() => handleCraftButtonClick(selectedItems, playerId, roomId, signAndSubmitTransaction)}
             >
               <planeBufferGeometry args={[3, 1]} />
               <meshStandardMaterial color="blue" />
@@ -393,7 +412,10 @@ const getItemImage = (itemCode, holeTexture, boxTexture) => {
     // Check if the selected item is already in the list
     if (!selectedItems.includes(selectedItem)) {
       // Add the selected item to the list
+      console.log(selectedItem)
+      
       setSelectedItems([...selectedItems, selectedItem]);
+      console.log(selectedItems)
     } else {
       // Remove the selected item from the list if it's already selected
       setSelectedItems(selectedItems.filter(item => item !== selectedItem));
@@ -471,8 +493,30 @@ const InventoryItem = ({ item, position, onClick, holeTexture, boxTexture }) => 
     );
   };
 
-const handleCraftButtonClick = () => {
-    console.log("time to craft")
+  const handleCraftButtonClick = (selectedItems, playerId, roomId, signAndSubmitTransaction) => {
+    
+    const item_1 = selectedItems[0];
+    const item_2 = selectedItems[1]
+
+    const addCraft = async () => {
+
+    const payload: Types.TransactionPayload = {
+        type: "entry_function_payload",
+        function: `${'0xe5385db1465ff28c87f06296801e4861e238e8927c917e0af5d22151422dd495'}::dapp::add_player_craft`,
+        type_arguments: [],
+        arguments: [playerId, roomId, item_1, item_2]
+      };
+
+    try {
+      
+      const response = await signAndSubmitTransaction(payload);
+      console.log(response);
+    } 
+    catch (error) {
+      console.error(error);
+    }
+  }
+    addCraft();
 };
 
 const checkRoomStatus = (roomId, setRoomActive) => {
@@ -600,7 +644,7 @@ if (roomActive) {
 
 const roomUpdateLogic = (countdown,
    simulating, setSimulating, setCountdown, setTurn,
-    setDependency, turn, dependency, setTurnEnded, roomActive, setToastVisible) => {
+    setDependency, turn, dependency, setTurnEnded, roomActive, setToast) => {
 
       useEffect(() => {
         const gameStateString = localStorage.getItem('gameState');
@@ -656,6 +700,11 @@ const roomUpdateLogic = (countdown,
       console.log("ive been run agn")
       // Start simulation
       setSimulating(true);
+      setToast({
+        visible: false,
+        title: '',
+        description: ''
+      });
       setCountdown(10);
       console.log('Simulation started...');
       setDependency(true);
@@ -664,7 +713,11 @@ const roomUpdateLogic = (countdown,
       setTimeout(() => {
         // End simulation
         setSimulating(false);
-        setToastVisible(false)
+        setToast({
+          visible: false,
+          title: '',
+          description: ''
+        });
         // Increment turn
         setTurn(prevTurn => prevTurn + 1);
         setDependency(false);
@@ -752,39 +805,53 @@ const handleCellHover = (gridRef, row: number, col: number, hoverColor: string, 
   });
 };
 
-const handleCellClick = (row: number, col: number, roomGrid, playerAddress, roomId, signAndSubmitTransaction, turnEnded, countdown, setAddPlayerInputComponent, simulating, setToastVisible) => {
-  // if (turnEnded) {
-  //   alert('Current turn has ended. You cannot make a move now.');
-  //   return;
-  // }
+const handleCellClick = (row: number, col: number, roomGrid, playerAddress, roomId, signAndSubmitTransaction, turnEnded, countdown, setAddPlayerInputComponent, simulating, setToast) => {
   if (simulating) {
-    setToastVisible(true)
+    setToast({
+      visible: true,
+      title: "Cannot Move",
+      description: "Please wait for Room to finish Simulating before Moving"
+    });
     return;
   }
 
   if(playerAddress == undefined){
-    alert("You need to connect your wallet first!");
+    setToast({
+      visible: true,
+      title: "Wallet not Connected",
+      description: "You need to first connect your wallet to the Room!"
+    });
     return;
   }
-  
-  // Get the player's current position
+
   const currentPlayerPosition = getPlayerPosition(roomGrid, playerAddress);
-  const newPosition = calculateNewPosition(currentPlayerPosition, row, col);
+  const newPosition = calculateNewPosition(currentPlayerPosition, row, col, setToast);
   console.log(newPosition)
 
   if (newPosition) {
     const { row: newRow, col: newCol } = newPosition;
     const updatedcol = newCol + 1;
+    console.log("updated col", updatedcol)
+    console.log("newRow", newRow)
 
-    console.log(roomGrid[0].items_list.some(player => player.position.x === newRow && player.position.y === updatedcol))
+    console.log(roomGrid[0].items_list.some(item => Math.floor(item.position.x) === newRow && Math.floor(item.position.y) === updatedcol));
     if(roomGrid[0].players_list.some(player => player.position.x === newRow && player.position.y === updatedcol)) {
-      alert('Another player is occupying this cell. You cannot move here.');
-      return; 
+      setToast({
+        visible: true,
+        title: "Invalid Move",
+        description: "Another player is occupying this cell. You cannot move here!"
+      });
+      return;
     }
-    else if(roomGrid[0].items_list.some(item => item.position.x === newRow && item.position.y === updatedcol)) {
-      console.log('You found an item!');
-    }
+
     else {
+      if(roomGrid[0].items_list.some(item => Math.floor(item.position.x) === newRow && Math.floor(item.position.y) === updatedcol)){
+        setToast({
+          visible: true,
+          title: "Item Found",
+          description: "You have found an Item. Going into Inventory after Move"
+        });
+      }
       console.log("executing add player input");
       const component = useAddPlayerInput(playerAddress, roomId, newPosition, signAndSubmitTransaction, countdown);
 
@@ -805,7 +872,6 @@ const getPlayerPosition = (roomGrid: RoomGridItem[] | null, playerAddress: strin
   }
   const currentPlayer = roomGrid.find(room => room.players_list.some(player => player.address === playerAddress));
 
-  console.log("currentPlayer", roomGrid.find(room => room.players_list.some(player => player.address === playerAddress)))
   if (!currentPlayer) {
     return null;
   }
@@ -836,13 +902,11 @@ console.log(col);
   return { row, col };
 };
 
-const calculateNewPosition = (currentPlayerPosition, row, col) => {
-  // Extract the current row and column from the player's position
+const calculateNewPosition = (currentPlayerPosition, row, col, setToast) => {
 
   console.log(currentPlayerPosition)
   const { row: currentRow, col: currentCol } = currentPlayerPosition;
 
-  // Calculate the absolute difference between the current and clicked cell positions
   const rowDiff = row - currentRow;
   const colDiff = col - currentCol;
 
@@ -851,11 +915,14 @@ const calculateNewPosition = (currentPlayerPosition, row, col) => {
 
   // Check if the clicked cell is one cell away vertically or horizontally
   if ((Math.abs(rowDiff) === 1 && colDiff === 0) || (Math.abs(colDiff) === 1 && rowDiff === 0)) {
-    // Return the new position if the clicked cell is one cell away
-    // console.log(x, y)
     return { row: row, col: col };
   } else {
-    alert('You can only move one cell up, down, left, or right from your current position.');
+    // alert('You can only move one cell up, down, left, or right from your current position.');
+    setToast({
+      visible: true,
+      title: "Invalid Move",
+      description: "You can only move one cell UP, DOWN, LEFT, or RIGHT from your current position."
+    });
     return null;
   }
 };

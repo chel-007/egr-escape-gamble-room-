@@ -1,7 +1,8 @@
-import React from 'react';
-import { Types, Provider } from "aptos";
+import { useState } from "react";
+import { Types } from "aptos";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import classes from '../components/Dashboard/Dashboard.module.css';
+import Toast from "../components/ui/new-toast";
     
 export default function CreateRoom(props: {
   isTxnInProgress: boolean;
@@ -9,6 +10,12 @@ export default function CreateRoom(props: {
 }) {
   // wallet state
   const { signAndSubmitTransaction } = useWallet();
+  const [toast, setToast] = useState({
+    visible: false,
+    title: '',
+    description: ''
+  });
+
   const createRoom = async () => {
 
     props.setTxn(true);
@@ -22,12 +29,22 @@ export default function CreateRoom(props: {
         
         let response = await signAndSubmitTransaction(payload);
 
+        setToast({
+          visible: true,
+          title: 'Room Created',
+          description: 'You have successfully created a new room'
+        });
+
         console.log(response)
         alert("You have successfully created a new room");
       } catch (error) {
         console.log(error);
         if (error === "WalletNotConnectedError") {
-          alert("Connect Wallet before trying to Create Room");
+          setToast({
+            visible: true,
+            title: 'Room Creation Failed',
+            description: 'Connect Your Wallet before trying to Create Room'
+          });
         }
         props.setTxn(false);
         return;
@@ -37,8 +54,13 @@ export default function CreateRoom(props: {
   };
 
   return (
+    <>
+    {toast.visible && (
+      <Toast title={toast.title} description={toast.description} />
+    )}
       <button className={classes.createRoomBtn} 
         onClick={() => createRoom()}>CREATE NEWROOM
       </button>
+    </>
   );
 }
