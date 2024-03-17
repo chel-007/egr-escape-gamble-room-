@@ -71,7 +71,6 @@ export default function useAddPlayerInput (playerAddress, roomId, newPosition, s
         <div style={{position: 'absolute', zIndex: '10', backgroundColor: 'white', width: '40%', height: '30px'}}>
           {/* Render the Notification component if showNotification is true */}
           {/* {<Notification message="Please send the transaction soon to execute the move." />} */}
-          <p style={{fontSize: '40px'}}>hey</p>
         </div>
       );
     

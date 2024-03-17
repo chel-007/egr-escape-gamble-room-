@@ -1,9 +1,12 @@
 import React, { useRef, MutableRefObject, useEffect, useState, useCallback } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { Box } from '@react-three/drei';
+import { PerspectiveCamera } from '@react-three/drei';
 import { Mesh } from 'three';
 import * as THREE from 'three';
+import { Vector3 } from 'three';
+import { Euler } from 'three';
 import { useNavigate } from 'react-router-dom';
 import { Aptos, AptosConfig, MoveValue, Network } from "@aptos-labs/ts-sdk";
 import { Text } from '@react-three/drei';
@@ -18,10 +21,12 @@ import useAddPlayerInput from './AddPlayerInput';
 import WalletConnector from '../walletConnector';
 import { useLoader } from '@react-three/fiber';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+// import CameraControl from './CameraControl';
 import { TextureLoader } from 'three';
 import Toast from '../../components/ui/new-toast'
 import holeImage from '../../assets/hole.png'
 import boxImage from '../../assets/box.png'
+import chaosImage from '../../assets/chaos.png';
 
 
 interface RoomGridItem {
@@ -57,11 +62,19 @@ const Room = ({ roomId }) => {
   // const [toastVisible, setToastVisible] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
   const [playerId, setPlayerId] = useState<string | null>(null);
+  const initialCameraPosition = new Vector3(-2, 6, 23);
+  const initialCameraRotation = new Euler(-Math.PI / 4, Math.PI / 4, 0);
+  const targetCameraPosition = new Vector3(10, 20, 15);
+  
+  // Use useState hook to manage camera position and rotation
+  const [cameraPosition, setCameraPosition] = useState<Vector3>(initialCameraPosition);
+  const [cameraRotation, setCameraRotation] = useState<Euler>(initialCameraRotation);
 
   const { account, connected, signAndSubmitTransaction } = useWallet();
   const loader = new TextureLoader();
   const holeTexture = loader.load(holeImage);
   const boxTexture = loader.load(boxImage);
+  const chaosTexture = loader.load(chaosImage);
 
 const geometry = new THREE.PlaneGeometry(1, 1); // Adjust the size as needed
 
@@ -92,7 +105,10 @@ meshNew.position.set(0, 0, 0);
   
   // Create a reference for the grid
   const gridRef = useRef<Mesh>(null);
-  // const modelRef = useRef(null);
+
+  const cameraRef = useRef<THREE.PerspectiveCamera>(null);
+
+  const modelRef = useRef(null);
 
   useFetchRoomGrid(roomId, setRoomGrid, dependency, setDependency);
   usePositionEntities(roomGrid, cellSize, padding);
@@ -116,6 +132,31 @@ meshNew.position.set(0, 0, 0);
     return () => clearInterval(interval);
   }, [roomId, checkRoomStatus]);
 
+  useEffect(() => {
+    // Calculate the increments for position
+    const positionIncrement = targetCameraPosition.clone().sub(initialCameraPosition).divideScalar(120); // Divide by 120 to spread over 12 seconds
+    let currentCameraPosition = initialCameraPosition.clone();
+
+    // Update camera position every 100 milliseconds for 12 seconds
+    const interval = setInterval(() => {
+      // Update camera position
+      currentCameraPosition = currentCameraPosition.clone().add(positionIncrement);
+
+      // Set the updated camera position
+      setCameraPosition(currentCameraPosition.clone());
+    }, 100); // Update every 100 milliseconds
+
+    // Clear the interval after 12 seconds to stop the updates
+    setTimeout(() => {
+      clearInterval(interval);
+    }, 12000); // Stop after 12 seconds
+
+    // Clean up function to clear the interval when the component unmounts
+    return () => clearInterval(interval);
+  }, [cameraPosition, initialCameraPosition]);
+  
+  
+
 
   useEffect(() => {
     const foundPlayer = roomGrid?.find(room => {
@@ -125,8 +166,7 @@ meshNew.position.set(0, 0, 0);
     if (foundPlayer) {
       const index = foundPlayer.players_list.findIndex(player => player.address === playerAddress);
       if (index !== -1) {
-        setPlayerId(index.toString()); // Convert index to string
-        console.log(index.toString())
+        setPlayerId(index.toString());
       }
     }
   }, [roomGrid, playerAddress]);
@@ -173,88 +213,60 @@ meshNew.position.set(0, 0, 0);
       <WalletConnector />
       </div>
       )}
-      {roomActive && location.pathname === `/room` && (
-      <Canvas
-        camera={{ position: [-2, 6, 23], rotation: [-Math.PI / 4, Math.PI / 4, 0] }}
-      >
-        <OrbitControls
-          enableRotate={true}
-          enablePan={true}
-          enableZoom={true}
-          maxPolarAngle={Math.PI / 2.2}
-          minPolarAngle={Math.PI / 6}
-          maxAzimuthAngle={Math.PI / 3}
-          minAzimuthAngle={-Math.PI / 15}
-        />
-        <color attach="background" args={['black']} />
-        <ambientLight intensity={0.5} />
-        <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
-        {/* Particle system for space background */}
-        <mesh ref={particleSystem}>
-          <sphereGeometry args={[50, 32, 32]} /> {/* Decrease the radius from 100 to 50 */}
-          <meshBasicMaterial color="black" side={THREE.BackSide} />
-        </mesh>
 
-        {/* Include the ParticleSystem component */}
-        <ParticleSystem particleSystem={particleSystem} />
-
-        {/* Render the grid */}
-        <mesh ref={gridRef}>
-          {Array.from({ length: 15}).map((_, row) =>
-            Array.from({ length: 15 }).map((_, col) => (
-              <Box
-                key={`${row}-${col}`}
-                position={[row * (cellSize + padding), 0, col * (cellSize + padding)]}
-                scale={[cellSize, 0.1, cellSize]}
-                onPointerOver={() => handleCellHover(gridRef, row, col, hoverColor, defaultColor)}
-                onClick={() => 
-                handleCellClick(row, col, roomGrid, playerAddress,
-                roomId, signAndSubmitTransaction, turnEnded, countdown,
-                setAddPlayerInputComponent, simulating, setToast)} // Handle click
-              />
-            ))
-          )}
-        </mesh>
-
-        {roomGrid && roomGrid.map((room, roomIndex) =>
-          room.players_list.map((player, playerIndex) => {
-            // Convert position data to numbers
-            const x = parseFloat(player.position.x);
-            const y = parseFloat(player.position.y);
-
-            // Calculate position within the grid
-            const posX = x * 1; // Assuming cell size is 1
-            const posY = y * 1; // Assuming cell size is 1
-
-            // Define colors for players
-            const colors = ['#ff0000', '#00ff00', '#0000ff']; // Example colors
-            const truncatedAddress = `${player.address.slice(0, 6)}...${player.address.slice(-6)}`;
-
-            return (
-              <group key={`${roomIndex}-${playerIndex}`} position={[posX, 0.5, posY]}>
-                {/* Player Box */}
-                <mesh>
-                  <boxBufferGeometry args={[0.5, 1.5, 0.5]} />
-                  <meshStandardMaterial color={colors[playerIndex % colors.length]} />
-                </mesh>
-                {/* Player Address */}
-                <Text
-                  position={[0, 0.9, 0]} // Adjust position above the player
-                  fontSize={0.1}
-                  color="white"
-                  anchorX="center"
-                  anchorY="middle"
-                  outlineWidth={0.02}
-                  outlineColor="black"
-                >
-                  {truncatedAddress}
-                </Text>
-              </group>
-            );
-          })
-        )}
-
-        {roomGrid && roomGrid.map((room, roomIndex) =>
+{roomActive && location.pathname === `/room` && (
+  <Canvas>
+    <OrbitControls
+      enableRotate={true}
+      enablePan={true}
+      enableZoom={true}
+      maxPolarAngle={Math.PI / 2.2}
+      minPolarAngle={Math.PI / 6}
+      maxAzimuthAngle={Math.PI / 3}
+      minAzimuthAngle={-Math.PI / 15}
+    />
+    <color attach="background" args={['black']} />
+    <ambientLight intensity={0.5} />
+    <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
+    <mesh ref={particleSystem}>
+      <sphereGeometry args={[50, 32, 32]} />
+      <meshBasicMaterial color="black" side={THREE.BackSide} />
+    </mesh>
+    <ParticleSystem particleSystem={particleSystem} />
+    <mesh ref={gridRef}>
+      {Array.from({ length: 15 }).map((_, row) =>
+        Array.from({ length: 15 }).map((_, col) => (
+          <Box
+            key={`${row}-${col}`}
+            position={[row * (cellSize + padding), 0, col * (cellSize + padding)]}
+            scale={[cellSize, 0.1, cellSize]}
+            onPointerOver={() => handleCellHover(gridRef, row, col, hoverColor, defaultColor)}
+            onClick={() => handleCellClick(row, col, roomGrid, playerAddress, roomId, signAndSubmitTransaction, turnEnded, countdown, setAddPlayerInputComponent, simulating, setToast)}
+          />
+        ))
+      )}
+    </mesh>
+    {roomGrid && roomGrid.map((room, roomIndex) =>
+      room.players_list.map((player, playerIndex) => {
+        const x = parseFloat(player.position.x);
+        const y = parseFloat(player.position.y);
+        const posX = x * 1;
+        const posY = y * 1;
+        const colors = ['#ff0000', '#00ff00', '#0000ff'];
+        const truncatedAddress = `${player.address.slice(0, 6)}...${player.address.slice(-6)}`;
+        return (
+          <group key={`${roomIndex}-${playerIndex}`} position={[posX, 0.5, posY]}>
+            <mesh>
+              <boxGeometry args={[0.5, 1.5, 0.5]} />
+              <meshStandardMaterial color={colors[playerIndex % colors.length]} />
+            </mesh>
+            {player.address === playerAddress && <PlayerArrow position={new Vector3(x, 1, y)} />}
+          </group>
+        );
+      })
+    )}
+    {/* Additional roomGrid mapping for items_list */}
+    {roomGrid && roomGrid.map((room, roomIndex) =>
           room.items_list.map((item, itemIndex) => {
             // Convert position data to numbers
             const x = parseFloat(item.position.x);
@@ -282,56 +294,46 @@ meshNew.position.set(0, 0, 0);
               position={itemPositionScaleMap[item.item_code].position}
               scale={itemPositionScaleMap[item.item_code].scale}
               itemCode={item.item_code}
-              ItemModels={ItemModels}
-            />
+              ItemModels={ItemModels}/>
             );
 
           })
         )}
+    {/* Inventory rendering */}
+    <group position={[-1, 6, 12]}>
+            {/* Whiteboard */}
+            <mesh>
+              <boxGeometry args={[5, 3, 0.1]}/>
+              <meshStandardMaterial color="white"/>
+            </mesh>
+            {/* Inventory header text */}
+            <Text
+              position={[0, 1.1, 0.1]}
+              fontSize={0.3}
+              fontWeight={900}
+              color="black"
+              anchorX="center"
+              anchorY="middle"
+            >
+              Inventory
+            </Text>
 
-<group position={[-1, 6, 12]}>
-  {/* Whiteboard */}
-  <mesh>
-    <boxBufferGeometry args={[5, 3, 0.1]} />
-    <meshStandardMaterial color="white" />
-  </mesh>
-  {/* Inventory header text */}
-  <Text
-    position={[0, 1.1, 0.1]}
-    fontSize={0.3}
-    fontWeight={900}
-    color="black"
-    anchorX="center"
-    anchorY="middle"
-  >
-    Inventory
-  </Text>
-  {/* Text for inventory items */}
-  {roomGrid &&
-    roomGrid
-      // Filter roomGrid to get the player's inventory only
-      .filter(room => room.players_list.some(player => player.address === playerAddress))
-      .map((room, roomIndex) =>
-        room.players_list
-          .filter(player => player.address === playerAddress)
-          .map((player, playerIndex) => (
-            <React.Fragment key={`player-inventory-${roomIndex}-${playerIndex}`}>
-              {player.inventory.map((item, itemIndex) => {
+        {roomGrid &&
+          roomGrid
+            // Filter roomGrid to get the player's inventory only
+            .filter(room => room.players_list.some(player => player.address === playerAddress))
+            .map((room, roomIndex) =>
+              room.players_list
+                .filter(player => player.address === playerAddress)
+                .map((player, playerIndex) => (
+               <React.Fragment key={`player-inventory-${roomIndex}-${playerIndex}`}>
+                {player.inventory.map((item, itemIndex) => {
                 const row = Math.floor(itemIndex / maxItemsPerRow);
                 const col = itemIndex % maxItemsPerRow;
-                const x = -1.5 + col * itemSpacing; // Adjust x position based on column
-                const y = 0.2 - row * itemSpacing; // Adjust y position based on row
+                const x = -1.5 + col * itemSpacing;
+                const y = 0.2 - row * itemSpacing;
 
-                // const itemCodeNames = {
-                //   1: 'Hole',
-                //   2: 'Clean Box',
-                //   3: 'Box',
-                //   4: 'Tele',
-                //   5: 'Potion'
-                // };
-
-                const texture = getItemImage(item, holeTexture, boxTexture);
-                // texture.repeat.set(2, 2);
+                const texture = getItemImage(item, holeTexture, boxTexture, chaosTexture);
                 texture.colorSpace = THREE.sRGBEncoding;
 
                 return (
@@ -339,43 +341,60 @@ meshNew.position.set(0, 0, 0);
                   key={`inventory-item-${roomIndex}-${playerIndex}-${itemIndex}`}
                   boxTexture={boxTexture}
                   holeTexture={holeTexture}
+                  chaosTexture={chaosTexture}
                   item={item}
                   position={[x, y, 0.1]}
-                  onClick={() => handleItemClick(item, setSelectedItems, selectedItems)}
-                />
-                );
-              })}
-            </React.Fragment>
-          ))
-      )}
+                  onClick={() => handleItemClick(item, setSelectedItems, selectedItems)}/>
+                  );
+                })}
+                  </React.Fragment>
+                ))
+            )}
+    {/* Craft button */}
+    {selectedItems.length === 2 && (
+              <mesh
+                position={[0, -3, 0]}
+                onClick={() => handleCraftButtonClick(selectedItems, playerId, roomId, signAndSubmitTransaction)}>
+               <planeBufferGeometry args={[3, 1]}/>
+                <meshStandardMaterial color="blue"/>
+                  <Text
+                    position={[0, 0, 0.1]}
+                    fontSize={0.3}
+                    color="white"
+                    anchorX="center"
+                    anchorY="middle"
+                  >
+                    Craft
+                  </Text>
+                </mesh>
+              )}
+          </group>
+    {/* cellClicked handling */}
+    {cellClicked && addPlayerInputComponent}
+    <CanvasFrame boxRef={boxRef}/>
+    <CameraFrame/>
+  </Canvas>
+)}
 
-      {selectedItems.length === 2 && (
-            <mesh
-              position={[0, -3, 0]}
-              onClick={() => handleCraftButtonClick(selectedItems, playerId, roomId, signAndSubmitTransaction)}
-            >
-              <planeBufferGeometry args={[3, 1]} />
-              <meshStandardMaterial color="blue" />
-              <Text
-                position={[0, 0, 0.1]}
-                fontSize={0.3}
-                color="white"
-                anchorX="center"
-                anchorY="middle"
-              >
-                Craft
-              </Text>
-            </mesh>
-          )}
-</group>;
-        {cellClicked && addPlayerInputComponent}
-        <CanvasFrame boxRef={boxRef} />
-      </Canvas>
-      )}
-       <CanvasEffect navigate={navigate} />
+       <CanvasEffect navigate={navigate}/>
     </div>
+  );
+};
 
-
+const PlayerArrow = ({ position }) => {
+  return (
+    <group position={[0, 1.7, 0]} rotation={[Math.PI, 0, 0]}>
+      {/* Arrow Shaft */}
+      <mesh>
+        <cylinderGeometry args={[0.05, 0.05, 0.5, 6]} />
+        <meshStandardMaterial color="brown" />
+      </mesh>
+      {/* Arrow Head */}
+      <mesh position={[0, 0.4, 0]}>
+        <coneGeometry args={[0.13, 0.35, 8]} />
+        <meshStandardMaterial color="brown" />
+      </mesh>
+    </group>
   );
 };
 
@@ -399,13 +418,16 @@ const Item = ({ position, scale, itemCode, ItemModels }) => {
 };
 
 
-const getItemImage = (itemCode, holeTexture, boxTexture) => {
+const getItemImage = (itemCode, holeTexture, boxTexture, chaosTexture) => {
   if(itemCode == 1) {
       return holeTexture;
   }
-    else if(itemCode == 3){
-      return boxTexture
-    }
+  else if(itemCode == 3){
+    return boxTexture
+  }
+  else if(itemCode == 0){
+    return chaosTexture
+  }
   };
 
   const handleItemClick = (selectedItem, setSelectedItems, selectedItems) => {
@@ -422,13 +444,14 @@ const getItemImage = (itemCode, holeTexture, boxTexture) => {
     }
   };
 
-const InventoryItem = ({ item, position, onClick, holeTexture, boxTexture }) => {
+const InventoryItem = ({ item, position, onClick, holeTexture, boxTexture, chaosTexture }) => {
     const [isSelected, setIsSelected] = useState(false);
     const [isItemHovered, setIsItemHovered] = useState(false);
 
     const meshRef = useRef<Mesh>(null);
 
     const itemCodeNames = {
+      0: 'Chaos',
       1: 'Hole',
       2: 'Clean Box',
       3: 'Box',
@@ -437,7 +460,7 @@ const InventoryItem = ({ item, position, onClick, holeTexture, boxTexture }) => 
     };
 
     
-    const texture = getItemImage(item, holeTexture, boxTexture);
+    const texture = getItemImage(item, holeTexture, boxTexture, chaosTexture);
     // texture.repeat.set(2, 2);
     texture.colorSpace = THREE.sRGBEncoding;
   
@@ -469,15 +492,13 @@ const InventoryItem = ({ item, position, onClick, holeTexture, boxTexture }) => 
         onClick={handleClick}
         onPointerEnter={handleMouseEnter} // Handle mouse enter event
         onPointerLeave={handleMouseLeave} // Handle mouse leave event
-        ref={meshRef}
-        >
-          <planeBufferGeometry args={[1, 1]} />
+        ref={meshRef}>
+          <planeGeometry args={[1, 1]}/>
           <meshStandardMaterial
             map={texture}
             color={isSelected ? 'darkgray' : 'white'} // Change color based on selection state
             transparent={true}
-            side={THREE.DoubleSide}
-          />
+            side={THREE.DoubleSide}/>
         </mesh>
         {/* Position the text slightly below the item */}
         <Text
@@ -504,7 +525,7 @@ const InventoryItem = ({ item, position, onClick, holeTexture, boxTexture }) => 
         type: "entry_function_payload",
         function: `${'0xe5385db1465ff28c87f06296801e4861e238e8927c917e0af5d22151422dd495'}::dapp::add_player_craft`,
         type_arguments: [],
-        arguments: [playerId, roomId, item_1, item_2]
+        arguments: [roomId, playerId, item_1, item_2]
       };
 
     try {
@@ -928,7 +949,49 @@ const calculateNewPosition = (currentPlayerPosition, row, col, setToast) => {
 };
 
 
+const CameraFrame = () => {
+  const { camera } = useThree();
+  const targetPosition = new Vector3(-2, 6, 23);
+const initialPosition = new Vector3(0, 15, 100)
+  const zoomDuration = 3000;
+  const [animationEnded, setAnimationEnded] = useState(false);
+  const animationEndedRef = useRef(false);
 
+  useEffect(() => {
+    // Set initial camera position
+    camera.position.copy(initialPosition);
+  }, []); // Run only once when component mounts
+
+  useEffect(() => {
+    if (animationEndedRef.current) return;
+
+    const startTime = Date.now();
+
+    const animateCamera = () => {
+      const currentTime = Date.now();
+      const elapsedTime = currentTime - startTime;
+      const t = Math.min(1, elapsedTime / zoomDuration);
+
+      const newPosition = initialPosition.clone().lerp(targetPosition, t);
+      camera.position.copy(newPosition);
+
+      if (camera.position.distanceTo(targetPosition) < 0.1) {
+        animationEndedRef.current = true;
+        setAnimationEnded(true);
+      } else {
+        requestAnimationFrame(animateCamera);
+      }
+    };
+
+    animateCamera();
+
+    return () => {
+      animationEndedRef.current = true;
+    };
+  }, [camera]);
+
+  return null;
+};
 
 const CanvasFrame = ({ boxRef }) => {
   useFrame(() => {
