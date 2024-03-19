@@ -8,20 +8,19 @@ import * as THREE from 'three';
 import { Vector3 } from 'three';
 import { Euler } from 'three';
 import { useNavigate } from 'react-router-dom';
-import { Aptos, AptosConfig, MoveValue, Network } from "@aptos-labs/ts-sdk";
+import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
 import { Text } from '@react-three/drei';
 import ParticleSystem from './ParticleSystem';
 import { MeshBasicMaterial, MeshStandardMaterial, Material, Group } from 'three';
 import {
   useWallet,
 } from "@aptos-labs/wallet-adapter-react";
-import { Types, Provider } from "aptos";
+import { Types } from "aptos";
 import './Room.css';
 import useAddPlayerInput from './AddPlayerInput';
+import UpdateRoom from './UpdateRoom';
 import WalletConnector from '../walletConnector';
-import { useLoader } from '@react-three/fiber';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-// import CameraControl from './CameraControl';
 import { TextureLoader } from 'three';
 import Toast from '../../components/ui/new-toast'
 import holeImage from '../../assets/hole.png'
@@ -70,7 +69,7 @@ const Room = ({ roomId }) => {
   const [cameraPosition, setCameraPosition] = useState<Vector3>(initialCameraPosition);
   const [cameraRotation, setCameraRotation] = useState<Euler>(initialCameraRotation);
 
-  const { account, connected, signAndSubmitTransaction } = useWallet();
+  const { account, connected, network, signAndSubmitTransaction } = useWallet();
   const loader = new TextureLoader();
   const holeTexture = loader.load(holeImage);
   const boxTexture = loader.load(boxImage);
@@ -110,27 +109,47 @@ meshNew.position.set(0, 0, 0);
 
   const modelRef = useRef(null);
 
+  // console.log(roomId)
+
   useFetchRoomGrid(roomId, setRoomGrid, dependency, setDependency);
   usePositionEntities(roomGrid, cellSize, padding);
   currentTurnTimer(setCountdown, setTurnEnded, roomActive);
 
   roomUpdateLogic(countdown, simulating, setSimulating, setCountdown, 
-    setTurn, setDependency, turn, dependency,
-    setTurnEnded, roomActive, setToast
+    setTurn, setDependency, turn, dependency, roomId, setToast, roomActive
     )
 
   useEffect(() => {
     // Call checkRoomStatus initially
-    checkRoomStatus(roomId, setRoomActive);
-  
+    checkRoomStatus(roomId, setRoomActive, setToast, roomActive);
+    console.log("still checking room status")
     // Start polling every 10 seconds
     const interval = setInterval(() => {
-      checkRoomStatus(roomId, setRoomActive);
+      UpdateRoom(roomId)
+      console.log("still checking every 10 secs")
+      checkRoomStatus(roomId, setRoomActive, setToast, roomActive);
+
+      if (roomActive) {
+        clearInterval(interval);
+      }
     }, 10000);
   
     // Clear the interval on component unmount
     return () => clearInterval(interval);
-  }, [roomId, checkRoomStatus]);
+  }, [roomId, checkRoomStatus, roomActive]);
+
+  // useEffect(() => {
+  //   UpdateRoom(roomId);
+
+  //   const interval = setInterval(() => {
+  //     console.log("update room called")
+  //     console.log(roomId)
+  //     UpdateRoom(roomId);
+  //   }, 19500);
+  
+  //   // Clear the interval on component unmount
+  //   return () => clearInterval(interval);
+  // }, [roomId, checkRoomStatus]);
 
   useEffect(() => {
     // Calculate the increments for position
@@ -214,6 +233,10 @@ meshNew.position.set(0, 0, 0);
       </div>
       )}
 
+{connected && network && network.name.toString() !== "RandomNet" && (
+        <Toast title="Wrong Network" description="Please switch your network to RandomNet to use this app!" />
+      )}
+
 {roomActive && location.pathname === `/room` && (
   <Canvas>
     <OrbitControls
@@ -260,6 +283,18 @@ meshNew.position.set(0, 0, 0);
               <boxGeometry args={[0.5, 1.5, 0.5]} />
               <meshStandardMaterial color={colors[playerIndex % colors.length]} />
             </mesh>
+              {/* Player Address */}
+                <Text
+                  position={[0, 0.9, 0]} // Adjust position above the player
+                  fontSize={0.1}
+                  color="white"
+                  anchorX="center"
+                  anchorY="middle"
+                  outlineWidth={0.02}
+                  outlineColor="black"
+                >
+                  {truncatedAddress}
+                </Text>
             {player.address === playerAddress && <PlayerArrow position={new Vector3(x, 1, y)} />}
           </group>
         );
@@ -375,8 +410,17 @@ meshNew.position.set(0, 0, 0);
     <CameraFrame/>
   </Canvas>
 )}
+      {location.pathname !== '/room' && (
+        <CanvasEffect navigate={navigate} setToast={setToast} />
+      )}
 
-       <CanvasEffect navigate={navigate}/>
+      {/* <Canvas>
+      <PerspectiveCamera
+        ref={cameraRef}
+        position={[0, 6, 23]}
+        makeDefault={false}  // Do not make this camera the default camera for the scene
+      />
+    </Canvas> */}
     </div>
   );
 };
@@ -523,7 +567,7 @@ const InventoryItem = ({ item, position, onClick, holeTexture, boxTexture, chaos
 
     const payload: Types.TransactionPayload = {
         type: "entry_function_payload",
-        function: `${'0xe5385db1465ff28c87f06296801e4861e238e8927c917e0af5d22151422dd495'}::dapp::add_player_craft`,
+        function: `${'0x60e5a00ffd3cf1ba4323bfa8f5ddbe1dea2c8f817607a5f89a32b28e5f16d37e'}::dapp::add_player_craft`,
         type_arguments: [],
         arguments: [roomId, playerId, item_1, item_2]
       };
@@ -540,7 +584,7 @@ const InventoryItem = ({ item, position, onClick, holeTexture, boxTexture, chaos
     addCraft();
 };
 
-const checkRoomStatus = (roomId, setRoomActive) => {
+const checkRoomStatus = (roomId, setRoomActive, setToast, roomActive) => {
   const config = new AptosConfig({ network: Network.RANDOMNET });
   const aptosClient = new Aptos(config);
 
@@ -548,22 +592,57 @@ const checkRoomStatus = (roomId, setRoomActive) => {
     try {
       const checkRoomResponse = await aptosClient.view({
         payload: {
-          function: `${'0xe5385db1465ff28c87f06296801e4861e238e8927c917e0af5d22151422dd495'}::dapp::get_room`,
+          function: `${'0x60e5a00ffd3cf1ba4323bfa8f5ddbe1dea2c8f817607a5f89a32b28e5f16d37e'}::dapp::get_room`,
           functionArguments: [roomId.toString()],
         },
       });
 
-      const room = checkRoomResponse[0] as { active?: boolean }; // Type assertion
+      const room = checkRoomResponse[0] as { active?: boolean, players_list?: [] };
+      setToast({
+        visible: false,
+        title: '',
+        description: ''
+      });
 
       if (room && room.active == true) {
-        // console.log(room.active);
+        console.log(room.players_list);
         setRoomActive(true);
-      } else {
+      } 
+      if (room && room.players_list && Number(room.players_list.length) === 5 && !roomActive) {
+        UpdateRoom(roomId)
+      }
+      else {
         console.log(room);
         localStorage.removeItem('gameState');
       }
     } catch (error) {
       console.error('Error checking room status:', error);
+      if (error instanceof Error && error.message){
+        if (error.message.includes('Cannot read properties of null')) {
+        setToast({
+          visible: true,
+          title: 'Room fetch Failed',
+          description: 'Cannot get Connected Room. Go to Dashboard to join a Room'
+        });
+      }
+      else if(error.message.includes('Network Error')){
+        setToast({
+          visible: true,
+          title: 'Room fetch Failed',
+          description: 'Network Error. Re-connect to the internet and reload'
+        });
+        }
+    }
+      if (error instanceof Error && error.message){
+        if (error.message.includes('Failed to execute function')) {
+          setToast({
+            visible: true,
+            title: 'Room fetch Failed',
+            description: 'Room ID Does not exist. Please join a new room'
+          });
+        localStorage.removeItem('activeRoomId');
+        }
+      }
     }
   };
 
@@ -584,7 +663,7 @@ const useFetchRoomGrid = (roomId, setRoomGrid, dependency, setDependency) => {
       try {
         const roomGrid = await aptosClient.view({
           payload: {
-            function: `${'0xe5385db1465ff28c87f06296801e4861e238e8927c917e0af5d22151422dd495'}::dapp::get_room`,
+            function: `${'0x60e5a00ffd3cf1ba4323bfa8f5ddbe1dea2c8f817607a5f89a32b28e5f16d37e'}::dapp::get_room`,
             functionArguments: [roomId.toString()],
           },
         });
@@ -592,6 +671,11 @@ const useFetchRoomGrid = (roomId, setRoomGrid, dependency, setDependency) => {
         console.log(roomGrid)
         setRoomGrid(roomGrid.flat());
       } catch (error) {
+        if (error instanceof Error && error.message){
+          if (error.message.includes('Network Error')) {
+            alert("Network Error. Please reconnect and Reload the Room!")
+          }
+        }
         console.error('Error fetching room grid data:', error);
       }
       // console.log("fetchroom", dependency)
@@ -665,7 +749,7 @@ if (roomActive) {
 
 const roomUpdateLogic = (countdown,
    simulating, setSimulating, setCountdown, setTurn,
-    setDependency, turn, dependency, setTurnEnded, roomActive, setToast) => {
+    setDependency, turn, dependency, roomId, setToast, roomActive) => {
 
       useEffect(() => {
         const gameStateString = localStorage.getItem('gameState');
@@ -717,7 +801,7 @@ const roomUpdateLogic = (countdown,
   
 
   useEffect(() => {
-    if (countdown === 0 && !simulating) {
+    if (countdown === 0 && !simulating && roomActive) {
       console.log("ive been run agn")
       // Start simulation
       setSimulating(true);
@@ -728,6 +812,7 @@ const roomUpdateLogic = (countdown,
       });
       setCountdown(10);
       console.log('Simulation started...');
+      UpdateRoom(roomId)
       setDependency(true);
 
       // Update the UI to indicate simulation
@@ -926,6 +1011,14 @@ console.log(col);
 const calculateNewPosition = (currentPlayerPosition, row, col, setToast) => {
 
   console.log(currentPlayerPosition)
+  if (!currentPlayerPosition) {
+    setToast({
+      visible: true,
+      title: "Player not Connected",
+      description: "Please Connect your Address before trying to Move!"
+    });
+    return null;
+  }
   const { row: currentRow, col: currentCol } = currentPlayerPosition;
 
   const rowDiff = row - currentRow;
@@ -1004,13 +1097,34 @@ const CanvasFrame = ({ boxRef }) => {
   return null;
 };
 
-const CanvasEffect = ({ navigate }) => {
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      navigate('/room');
-    }, 5000);
+const CanvasEffect = ({ navigate, setToast }) => {
+  const [roomOpened, setRoomOpened] = useState(false);
+  let retryTimeout;
 
-    return () => clearTimeout(timer);
+  const openRoomWithRetry = () => {
+    if (roomOpened) return;
+
+    const newWindow = window.open('/room', '_blank');
+    if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+      setToast({
+        visible: true,
+        title: 'Cannot open Room',
+        description: 'Popup was blocked. Please allow popups for this site.',
+      });
+      retryTimeout = setTimeout(openRoomWithRetry, 5000);
+    } else {
+      // Reset the toast visibility
+      setToast({ visible: false, title: '', description: '' });
+      setRoomOpened(true);
+      console.log("room is now opened, should't open again")
+    }
+  };
+
+  useEffect(() => {
+    retryTimeout = setTimeout(openRoomWithRetry, 5000);
+    return () => {
+      clearTimeout(retryTimeout);
+    };
   }, []);
 
   return null;

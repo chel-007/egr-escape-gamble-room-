@@ -21,6 +21,7 @@ import GetRoomList from '../../rooms/GetRoomList';
 import CreateRoom from "../../rooms/CreateRoom"; 
 import JoinRoom from '../../rooms/JoinRoom';
 import GetRoomByID from '../../rooms/GetRoomByID';
+import SpectateRoom from '../../rooms/SpectateRoom';
 import WalletConnector from '../walletConnector';
 import {
   useWallet,
@@ -53,12 +54,18 @@ export const Dashboard: FC<Props> = memo(function Dashboard(props = {}) {
 
   const { isLoading, connected, account, network } = useWallet();
 
-  console.log(network?.name)
-
   const { toast } = useToast();
 
   const handleOptionClick = (option) => {
     setActiveOption(option);
+  };
+
+  const [retryClicked, setRetryClicked] = useState(false);
+
+  const handleSpectateRetry = () => {
+    setIsLoading(true);
+    setRetryClicked(!retryClicked);
+    setIsLoading(false); // Set isLoading to false to trigger useEffect in GetRoomList
   };
 
   const [selectedLink, setSelectedLink] = useState('gameroom');
@@ -71,23 +78,6 @@ export const Dashboard: FC<Props> = memo(function Dashboard(props = {}) {
     { name: "Escape Room", icon: EscaperoomIconIcon },
     { name: "Duels", icon: EscaperoomIconIcon },
   ];
-
-  // useEffect(() => {
-  //   if (true) {
-  //     console.log("toast will run")
-  //     const { id, update } = toast({
-  //       title: "Wallet connected!",
-  //       description: "Your wallet is connected and ready to use.",
-  //       duration: 5000,
-  //     });
-      
-  //     // Update the toast to show it
-  //     update({ id, open: true });
-  //   }
-  // }, [connected, toast]);
-  
-  // console.log(rooms)
-  // console.log(detailedRooms)
  
   return (
     <div className={`${resets.clapyResets} ${classes.root}`}>
@@ -206,6 +196,37 @@ export const Dashboard: FC<Props> = memo(function Dashboard(props = {}) {
         </div>
       </div>
     )}
+
+{selectedLink === 'spectate' && (
+        <div className={classes.midSectionBg}>
+          <div className={classes.midSectionGradient}>
+            <div className={classes.roomdetailsBg}>
+              <div className={classes.roomRes}>
+                <div className={classes.roomNav}>
+                  <div className={classes.roomIdHeader}>room-id</div>
+                </div>
+                {!retryClicked && (
+                  <GetRoomList setRooms={setRooms} setIsLoading={setIsLoading} />
+                )}
+                {isLoading ? (
+                  <div className={classes.roomBg}>
+                    <div className={classes.roomId}>...</div>
+                  </div>
+                ) : (
+                  rooms.flat().map((room) => (
+                    <div className={classes.roomBg} key={room.id}>
+                      <div className={classes.roomId}>{room.id}</div>
+                      <SpectateRoom roomId={room.id} rooms={rooms} setIsLoading={setIsLoading} />
+                    </div>
+                  ))
+                )}
+              </div>
+              <button className={classes.roomStatusJoin} onClick={handleSpectateRetry}>Retry</button>
+            </div>
+          </div>
+        </div>
+      )}
+
 
     <div className={classes.howto}>
       <div className={classes.divider}>

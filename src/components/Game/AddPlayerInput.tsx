@@ -13,7 +13,7 @@ export default function useAddPlayerInput (playerAddress, roomId, newPosition, s
 
       const payload: Types.TransactionPayload = {
         type: "entry_function_payload",
-        function: `${'0xe5385db1465ff28c87f06296801e4861e238e8927c917e0af5d22151422dd495'}::dapp::add_player_input`,
+        function: `${'0x60e5a00ffd3cf1ba4323bfa8f5ddbe1dea2c8f817607a5f89a32b28e5f16d37e'}::dapp::add_player_input`,
         type_arguments: [],
         arguments: [playerAddress, roomId, row, col]
       };

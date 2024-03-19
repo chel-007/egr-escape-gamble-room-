@@ -21,7 +21,7 @@ export default function CreateRoom(props: {
     props.setTxn(true);
     const payload: Types.TransactionPayload = {
       type: "entry_function_payload",
-        function: `${'0xe5385db1465ff28c87f06296801e4861e238e8927c917e0af5d22151422dd495'}::dapp::create_room`,
+        function: `${'0x60e5a00ffd3cf1ba4323bfa8f5ddbe1dea2c8f817607a5f89a32b28e5f16d37e'}::dapp::create_room`,
         type_arguments: [],
         arguments: []
     }
@@ -36,7 +36,6 @@ export default function CreateRoom(props: {
         });
 
         console.log(response)
-        alert("You have successfully created a new room");
       } catch (error) {
         console.log(error);
         if (error === "WalletNotConnectedError") {

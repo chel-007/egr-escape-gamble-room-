@@ -21,7 +21,7 @@ const GetRoomByID = ({ rooms, setDetailedRooms, setIsLoading }) => {
             for (let i = 0; i < newRoom.length; i++) {
             const detailedRoom = await aptosClient.view({
             payload: {
-                function: `${'0xe5385db1465ff28c87f06296801e4861e238e8927c917e0af5d22151422dd495'}::dapp::get_room`,
+                function: `${'0x60e5a00ffd3cf1ba4323bfa8f5ddbe1dea2c8f817607a5f89a32b28e5f16d37e'}::dapp::get_room`,
                 functionArguments: [newRoom[i].id.toString()],
             },
         });

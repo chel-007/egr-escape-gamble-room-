@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Types } from "aptos";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import classes from '../components/Dashboard/Dashboard.module.css';
@@ -8,14 +8,30 @@ const JoinRoom = ({ detailedRoom, roomId, setIsLoading }) => {
   const { account, signAndSubmitTransaction } = useWallet();
   const [isPending, setIsPending] = useState(false);
   const [isJoined, setIsJoined] = useState(false);
+  const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
+
+
+  useEffect(() => {
+    // Check if there's an active room ID in local storage
+    const storedRoomId = localStorage.getItem('activeRoomId');
+    if (storedRoomId) {
+      setActiveRoomId(storedRoomId);
+    }
+  }, []);
+
 
   const handleJoinRoom = async () => {
+    if (activeRoomId) {
+      alert('You are already in a room.');
+      return;
+    }
+
     setIsPending(true);
     setIsJoined(false);
 
     const payload: Types.TransactionPayload = {
       type: "entry_function_payload",
-      function: `${'0xe5385db1465ff28c87f06296801e4861e238e8927c917e0af5d22151422dd495'}::dapp::add_player`,
+      function: `${'0x60e5a00ffd3cf1ba4323bfa8f5ddbe1dea2c8f817607a5f89a32b28e5f16d37e'}::dapp::add_player`,
       type_arguments: [],
       arguments: [
         account?.address,

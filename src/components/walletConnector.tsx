@@ -11,15 +11,16 @@ import {
   } from "./ui/dialog";
   import { BalanceIcon } from './Dashboard/BalanceIcon';
   import classes from './Dashboard/Dashboard.module.css';
-  import { DividerIcon } from './Dashboard/DividerIcon';
   import { DollarIcon } from './Dashboard/DollarIcon';
+  import Toast from "./ui/new-toast";
 
 
 export default function WalletConnector(props: { isTxnInProgress?: boolean }) {
 
-    const { connect, account, connected, disconnect, wallets, isLoading } = useWallet();
+    const { connect, account, connected, disconnect, wallets, isLoading, network } = useWallet();
     const [balance, setBalance] = useState<string | undefined>(undefined);
     const [isFaucetLoading, setIsFaucetLoading] = useState(false);
+
     
     useEffect(() => {
         if (connected && account) {

@@ -8,6 +8,8 @@ const GetRoomList = ({ setRooms, setIsLoading }) => {
     const aptosClient = new Aptos(config);
     const [toastVisible, setToastVisible] = useState(false);
 
+    console.log("from get room")
+
     useEffect(() => {
         const fetchRooms = async () => {
             setIsLoading(true);
@@ -15,7 +17,7 @@ const GetRoomList = ({ setRooms, setIsLoading }) => {
             try {
                 const roomsResponse = await aptosClient.view({
                     payload: {
-                        function: `${'0xe5385db1465ff28c87f06296801e4861e238e8927c917e0af5d22151422dd495'}::dapp::get_rooms`,
+                        function: `${'0x60e5a00ffd3cf1ba4323bfa8f5ddbe1dea2c8f817607a5f89a32b28e5f16d37e'}::dapp::get_rooms`,
                     },
                 });
                 
@@ -23,7 +25,9 @@ const GetRoomList = ({ setRooms, setIsLoading }) => {
                 // Flatten the array of arrays
                 setToastVisible(true)
 
-                setRooms(roomsResponse);          
+                setRooms(roomsResponse);  
+                console.log("was i run agn") 
+                setIsLoading(false)       
             } catch (error) {
                 console.error('Error fetching room list:', error);
             } finally {
@@ -35,16 +39,7 @@ const GetRoomList = ({ setRooms, setIsLoading }) => {
     }, [setRooms, setIsLoading]);
 
     // Return something meaningful here, depending on your use case
-    return (
-        <>
-        {toastVisible && (
-            <Toast
-            title="Rooms Fetched"
-            description="Rooms have been successfully fetched."
-        />
-        )}
-        </>
-    );
+    return null;
 };
 
 export default GetRoomList;
