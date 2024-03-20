@@ -19,6 +19,7 @@ import { Types } from "aptos";
 import './Room.css';
 import useAddPlayerInput from './AddPlayerInput';
 import UpdateRoom from './UpdateRoom';
+import axios from 'axios';
 import WalletConnector from '../walletConnector';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { TextureLoader } from 'three';
@@ -43,13 +44,11 @@ const Room = ({ roomId }) => {
 
   const gameStateString = localStorage.getItem('gameState');
   const gameState = gameStateString ? JSON.parse(gameStateString) : {};
-  const [turn, setTurn] = useState(gameState.turn || 1);
-  const [countdown, setCountdown] = useState(gameState.countdown || 50);
-  //const [turnEnded, setTurnEnded] = useState(gameState.turnEnded || false);
-  const [simulating, setSimulating] = useState(gameState.simulating || false);
-  const [dependency, setDependency] = useState(gameState.dependency || true)
+  const [turn, setTurn] = useState(1);
+  const [countdown, setCountdown] = useState(30);
+  const [simulating, setSimulating] = useState(false);
+  const [dependency, setDependency] = useState(true)
   const [turnEnded, setTurnEnded] = useState(false);
-  // const [simulating, setSimulating] = useState(false);
   const [cellClicked, setCellClicked] = useState(false);
   const [addPlayerInputComponent, setAddPlayerInputComponent] = useState(null);
   const [roomActive, setRoomActive] = useState(false);
@@ -74,6 +73,8 @@ const Room = ({ roomId }) => {
   const holeTexture = loader.load(holeImage);
   const boxTexture = loader.load(boxImage);
   const chaosTexture = loader.load(chaosImage);
+
+  roomId = 6;
 
 const geometry = new THREE.PlaneGeometry(1, 1); // Adjust the size as needed
 
@@ -115,41 +116,24 @@ meshNew.position.set(0, 0, 0);
   usePositionEntities(roomGrid, cellSize, padding);
   currentTurnTimer(setCountdown, setTurnEnded, roomActive);
 
-  roomUpdateLogic(countdown, simulating, setSimulating, setCountdown, 
-    setTurn, setDependency, turn, dependency, roomId, setToast, roomActive
+  roomUpdateLogic(roomId, countdown, simulating, setSimulating, setCountdown, 
+    setDependency, setToast, roomActive
     )
 
   useEffect(() => {
     // Call checkRoomStatus initially
-    checkRoomStatus(roomId, setRoomActive, setToast, roomActive);
-    console.log("still checking room status")
-    // Start polling every 10 seconds
-    const interval = setInterval(() => {
-      UpdateRoom(roomId)
-      console.log("still checking every 10 secs")
-      checkRoomStatus(roomId, setRoomActive, setToast, roomActive);
+    checkRoomStatus(roomId, setRoomActive, setToast, roomActive, setDependency);
 
+    const interval = setInterval(() => {
       if (roomActive) {
         clearInterval(interval);
       }
+
+      console.log("still checking")
+      checkRoomStatus(roomId, setRoomActive, setToast, roomActive, setDependency);
     }, 10000);
-  
-    // Clear the interval on component unmount
     return () => clearInterval(interval);
   }, [roomId, checkRoomStatus, roomActive]);
-
-  // useEffect(() => {
-  //   UpdateRoom(roomId);
-
-  //   const interval = setInterval(() => {
-  //     console.log("update room called")
-  //     console.log(roomId)
-  //     UpdateRoom(roomId);
-  //   }, 19500);
-  
-  //   // Clear the interval on component unmount
-  //   return () => clearInterval(interval);
-  // }, [roomId, checkRoomStatus]);
 
   useEffect(() => {
     // Calculate the increments for position
@@ -202,7 +186,7 @@ meshNew.position.set(0, 0, 0);
           </>
           ) : (
           <>
-            <div className="turn-info">Turn: {turn}</div>
+            <div className="turn-info">Make ur Move</div>
             <div className="countdown">Countdown: {countdown}s</div>
           </>
         )}
@@ -373,7 +357,7 @@ meshNew.position.set(0, 0, 0);
 
                 return (
                   <InventoryItem
-                  key={`inventory-item-${roomIndex}-${playerIndex}-${itemIndex}`}
+                  key={`inventory-item-${player.address}-${itemIndex}`}
                   boxTexture={boxTexture}
                   holeTexture={holeTexture}
                   chaosTexture={chaosTexture}
@@ -389,7 +373,7 @@ meshNew.position.set(0, 0, 0);
     {selectedItems.length === 2 && (
               <mesh
                 position={[0, -3, 0]}
-                onClick={() => handleCraftButtonClick(selectedItems, playerId, roomId, signAndSubmitTransaction)}>
+                onClick={() => handleCraftButtonClick(selectedItems, setSelectedItems, playerId, roomId, signAndSubmitTransaction)}>
                <planeBufferGeometry args={[3, 1]}/>
                 <meshStandardMaterial color="blue"/>
                   <Text
@@ -466,9 +450,18 @@ const getItemImage = (itemCode, holeTexture, boxTexture, chaosTexture) => {
   if(itemCode == 1) {
       return holeTexture;
   }
+  else if(itemCode == 2){
+    return boxTexture
+  }
   else if(itemCode == 3){
     return boxTexture
   }
+  if(itemCode == 4) {
+    return holeTexture;
+}
+if(itemCode == 5) {
+  return holeTexture;
+}
   else if(itemCode == 0){
     return chaosTexture
   }
@@ -558,10 +551,15 @@ const InventoryItem = ({ item, position, onClick, holeTexture, boxTexture, chaos
     );
   };
 
-  const handleCraftButtonClick = (selectedItems, playerId, roomId, signAndSubmitTransaction) => {
+  const handleCraftButtonClick = (selectedItems, setSelectedItems, playerId, roomId, signAndSubmitTransaction) => {
     
     const item_1 = selectedItems[0];
     const item_2 = selectedItems[1]
+
+    const updatedSelectedItems = selectedItems.filter(item => item !== item_1 && item !== item_2);
+
+    // Update the selected items state with the filtered array
+    setSelectedItems(updatedSelectedItems);
 
     const addCraft = async () => {
 
@@ -584,7 +582,7 @@ const InventoryItem = ({ item, position, onClick, holeTexture, boxTexture, chaos
     addCraft();
 };
 
-const checkRoomStatus = (roomId, setRoomActive, setToast, roomActive) => {
+const checkRoomStatus = (roomId, setRoomActive, setToast, roomActive, setDependency) => {
   const config = new AptosConfig({ network: Network.RANDOMNET });
   const aptosClient = new Aptos(config);
 
@@ -605,15 +603,11 @@ const checkRoomStatus = (roomId, setRoomActive, setToast, roomActive) => {
       });
 
       if (room && room.active == true) {
-        console.log(room.players_list);
         setRoomActive(true);
+        setDependency(true);
       } 
-      if (room && room.players_list && Number(room.players_list.length) === 5 && !roomActive) {
-        UpdateRoom(roomId)
-      }
       else {
         console.log(room);
-        localStorage.removeItem('gameState');
       }
     } catch (error) {
       console.error('Error checking room status:', error);
@@ -747,75 +741,140 @@ if (roomActive) {
   }, [setCountdown, setTurnEnded, roomActive]);
 };
 
-const roomUpdateLogic = (countdown,
-   simulating, setSimulating, setCountdown, setTurn,
-    setDependency, turn, dependency, roomId, setToast, roomActive) => {
+// const roomUpdateLogic = (countdown,
+//    simulating, setSimulating, setCountdown, setTurn,
+//     setDependency, turn, dependency, roomId, setToast, roomActive) => {
 
-      useEffect(() => {
-        const gameStateString = localStorage.getItem('gameState');
-        if (gameStateString !== null) {
-          const gameState = JSON.parse(gameStateString);
-          const lastUpdated = gameState.lastUpdated || Date.now();
-          let elapsedTime = Date.now() - lastUpdated;
+//       useEffect(() => {
+//         const gameStateString = localStorage.getItem('gameState');
+//         if (gameStateString !== null) {
+//           const gameState = JSON.parse(gameStateString);
+//           const lastUpdated = gameState.lastUpdated || Date.now();
+//           let elapsedTime = Date.now() - lastUpdated;
       
-          // Calculate the current turn based on elapsed time and stored countdown
-          let currentTurn = gameState.turn || 1;
-          let remainingTime = gameState.countdown || 20;
-          let isSimulating = gameState.simulating || false;
+//           // Calculate the current turn based on elapsed time and stored countdown
+//           let currentTurn = gameState.turn || 1;
+//           let remainingTime = gameState.countdown || 20;
+//           let isSimulating = gameState.simulating || false;
       
-          // Deduct the remaining countdown from the elapsed time
-          elapsedTime -= (30 - remainingTime) * 1000; // Convert seconds to milliseconds
+//           // Deduct the remaining countdown from the elapsed time
+//           elapsedTime -= (30 - remainingTime) * 1000; // Convert seconds to milliseconds
       
-          // Increment turns for each 20-second block
-          while (elapsedTime >= 30 * 1000) {
-            currentTurn++;
-            elapsedTime -= 30 * 1000;
-          }
+//           // Increment turns for each 20-second block
+//           while (elapsedTime >= 30 * 1000) {
+//             currentTurn++;
+//             elapsedTime -= 30 * 1000;
+//           }
       
-          // If the remaining time is less than or equal to 10 seconds, start simulating
-          if (remainingTime <= 10) {
-            isSimulating = true;
-            // If it ends during simulation, increment the turn
-            if (remainingTime === 0) {
-              currentTurn++;
-              remainingTime = 20; // Reset countdown for the next turn
-            }
-          }
+//           // If the remaining time is less than or equal to 10 seconds, start simulating
+//           if (remainingTime <= 10) {
+//             isSimulating = true;
+//             // If it ends during simulation, increment the turn
+//             if (remainingTime === 0) {
+//               currentTurn++;
+//               remainingTime = 20; // Reset countdown for the next turn
+//             }
+//           }
       
-          // Update state values
-          setTurn(currentTurn);
-          setCountdown(remainingTime);
-          setSimulating(isSimulating);
-          setDependency(gameState.dependency || true);
-        } else {
-          // No gameState found, initialize with default values
-          setTurn(1);
-          setCountdown(20);
-          setSimulating(false);
-          setDependency(true);
-        }
-      }, []);
+//           // Update state values
+//           setTurn(currentTurn);
+//           setCountdown(remainingTime);
+//           setSimulating(isSimulating);
+//           setDependency(gameState.dependency || true);
+//         } else {
+//           // No gameState found, initialize with default values
+//           setTurn(1);
+//           setCountdown(20);
+//           setSimulating(false);
+//           setDependency(true);
+//         }
+//       }, []);
       
   
   
   
+
+//   useEffect(() => {
+//     if (countdown === 0 && !simulating && roomActive) {
+//       console.log("ive been run agn")
+//       // Start simulation
+//       setSimulating(true);
+//       setToast({
+//         visible: false,
+//         title: '',
+//         description: ''
+//       });
+//       setCountdown(10);
+//       console.log('Simulation started...');
+//       // UpdateRoom(roomId)
+//       setDependency(true);
+
+//       // Update the UI to indicate simulation
+//       setTimeout(() => {
+//         // End simulation
+//         setSimulating(false);
+//         setToast({
+//           visible: false,
+//           title: '',
+//           description: ''
+//         });
+//         // Increment turn
+//         setTurn(prevTurn => prevTurn + 1);
+//         setDependency(false);
+//         // Start countdown for the next turn
+//         setCountdown(20);
+//        // currentTurnTimer(setCountdown, setTurnEnded, roomActive)
+//       }, 10000); // Simulate for 10 seconds
+//     }
+    
+//     // Update local storage with current game state and lastUpdated time
+//     localStorage.setItem('gameState', JSON.stringify({ countdown, simulating, turn, dependency, lastUpdated: Date.now() }));
+//   }, [countdown, simulating, setSimulating, setCountdown, setTurn, setDependency]);
+
+//   useEffect(() => {
+//     if (countdown === 0 && simulating) {
+//         // End simulation
+//         setSimulating(false);
+//         // Increment turn
+//         setTurn(prevTurn => prevTurn + 1);
+//         setDependency(false);
+//         setCountdown(20);
+//     }
+//     localStorage.setItem('gameState', JSON.stringify({ countdown, simulating, turn, dependency, lastUpdated: Date.now() }));
+//   }, [countdown, simulating, setSimulating, setCountdown, setTurn, setDependency]);
+
+// };
+
+const roomUpdateLogic = (roomId, countdown, simulating, setSimulating, setCountdown, setDependency, setToast, roomActive) => {
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`http://localhost:3001/roomTimestamp/${roomId}`);
+        const roomTimestamp = response.data.roomTimestamp || Date.now();
+        const elapsedTime = Date.now() - roomTimestamp;
+
+        console.log(response)
+        console.log(roomTimestamp)
+        console.log(elapsedTime)
+
+        //const remainingTime = Math.floor((30000 - elapsedTime) / 1000);
+        const remainingTime = Math.max(30 - Math.floor(elapsedTime / 1000), 0);
+        console.log(remainingTime)
+        setCountdown(remainingTime);
+      } catch (error) {
+        console.error('Error fetching room timestamp:', error);
+      }
+    };
+
+    fetchData();
+  }, [roomId, setCountdown, roomActive]);
 
   useEffect(() => {
-    if (countdown === 0 && !simulating && roomActive) {
-      console.log("ive been run agn")
+    if (countdown === 10 && !simulating) {
       // Start simulation
       setSimulating(true);
-      setToast({
-        visible: false,
-        title: '',
-        description: ''
-      });
-      setCountdown(10);
-      console.log('Simulation started...');
-      UpdateRoom(roomId)
       setDependency(true);
 
-      // Update the UI to indicate simulation
       setTimeout(() => {
         // End simulation
         setSimulating(false);
@@ -824,53 +883,21 @@ const roomUpdateLogic = (countdown,
           title: '',
           description: ''
         });
-        // Increment turn
-        setTurn(prevTurn => prevTurn + 1);
         setDependency(false);
-        // Start countdown for the next turn
-        setCountdown(20);
-       // currentTurnTimer(setCountdown, setTurnEnded, roomActive)
-      }, 10000); // Simulate for 10 seconds
+        setCountdown(30);
+      }, 10000);
     }
-    
-    // Update local storage with current game state and lastUpdated time
-    localStorage.setItem('gameState', JSON.stringify({ countdown, simulating, turn, dependency, lastUpdated: Date.now() }));
-  }, [countdown, simulating, setSimulating, setCountdown, setTurn, setDependency]);
+  }, [countdown, simulating, roomActive, setSimulating, setDependency, setCountdown]);
 
   useEffect(() => {
-    if (countdown === 0 && simulating) {
-        // End simulation
-        setSimulating(false);
-        // Increment turn
-        setTurn(prevTurn => prevTurn + 1);
-        setDependency(false);
-        setCountdown(20);
+    if (countdown === 0 && simulating && roomActive) {
+      // End simulation
+      setSimulating(false);
+      setDependency(false);
+      setCountdown(30);
     }
-    localStorage.setItem('gameState', JSON.stringify({ countdown, simulating, turn, dependency, lastUpdated: Date.now() }));
-  }, [countdown, simulating, setSimulating, setCountdown, setTurn, setDependency]);
-
+  }, [countdown, simulating, roomActive, setSimulating, setDependency, setCountdown]);
 };
-
-
-// const updateRoom = (roomId) => {
-//   const config = new AptosConfig({ network: Network.RANDOMNET });
-//   const aptosClient = new Aptos(config);
-
-//   useEffect(() => {
-//     const updatingRoom = async () => {
-//       try {
-//         const update = await aptosClient.view({
-//           payload: {
-//             function: `${'0xc0a4a8ac1b69d25e7595f69d04580ca77f3d604e235ca4f89dc97b156a61ef30'}::dapp::update_room`,
-//             functionArguments: [roomId.toString()],
-//           },
-//         });
-//       } catch (error) {
-//         console.error('Error Updating Room:', error);
-//       }
-//     };
-//   }, []);
-// };
 
 
 
@@ -1031,7 +1058,6 @@ const calculateNewPosition = (currentPlayerPosition, row, col, setToast) => {
   if ((Math.abs(rowDiff) === 1 && colDiff === 0) || (Math.abs(colDiff) === 1 && rowDiff === 0)) {
     return { row: row, col: col };
   } else {
-    // alert('You can only move one cell up, down, left, or right from your current position.');
     setToast({
       visible: true,
       title: "Invalid Move",

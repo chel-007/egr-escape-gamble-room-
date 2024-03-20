@@ -16,7 +16,7 @@ const UpdateRoom = (roomId) => {
     const account = Account.fromPrivateKey({ privateKey, address });
   
     const transaction = await aptosClient.transaction.build.simple({
-      sender: account.accountAddress,
+      sender: '0x70a5294493afd96cca25b3b139e62280c9c98c70a8e8e71fe1594a2a64d2b444',
       data: {
         function: `${'0x60e5a00ffd3cf1ba4323bfa8f5ddbe1dea2c8f817607a5f89a32b28e5f16d37e'}::dapp::update_room`,
         typeArguments: [],
@@ -26,10 +26,12 @@ const UpdateRoom = (roomId) => {
 
     try {
 
-    const senderAuthenticator = aptosClient.transaction.sign({ signer: account, transaction });
-    const committedTransaction = await aptosClient.transaction.submit.simple({ transaction, senderAuthenticator });
+      const committedTransaction = await aptosClient.signAndSubmitTransaction({
+        signer: account,
+        transaction,
+      });
 
-    console.log(committedTransaction.hash)
+    console.log(committedTransaction)
 
     console.log("Room update successful!");
 

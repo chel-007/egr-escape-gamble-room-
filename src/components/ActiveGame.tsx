@@ -11,12 +11,12 @@ const ActiveGame = () => {
     const storedRoomId = localStorage.getItem('activeRoomId');
     console.log(storedRoomId)
     if (storedRoomId) {
-      // clearStoredRoomId();
+      //  clearStoredRoomId();
       // setActiveRoomId(null)
       setActiveRoomId(storedRoomId);
     }
     // if(!storedRoomId){
-    //   localStorage.setItem('activeRoomId', '0');
+    //   localStorage.setItem('activeRoomId', '1');
     // }
   }, []);
 

@@ -61,9 +61,12 @@ const JoinRoom = ({ detailedRoom, roomId, setIsLoading }) => {
       {isJoined ? (
         <Room roomId={roomId} />
       ) : (
+        detailedRoom[roomId].players_list.length === 5 ? (
+          <button className={classes.roomStatusJoined} disabled>Full</button>
+        ) :
         detailedRoom[roomId].players_list.some(player => player.address === account?.address) ? (
-          <button className={classes.roomStatusJoined} disabled>Joined</button>
-        ) : (
+            <button className={classes.roomStatusJoined} disabled>Joined</button>
+          ) : (
           <button className={classes.roomStatusJoin} disabled={isPending} onClick={handleJoinRoom}>
             {isPending ? 'Joining...' : 'Join'}
           </button>
