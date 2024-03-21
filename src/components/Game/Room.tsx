@@ -18,14 +18,16 @@ import {
 import { Types } from "aptos";
 import './Room.css';
 import useAddPlayerInput from './AddPlayerInput';
-import UpdateRoom from './UpdateRoom';
 import axios from 'axios';
 import WalletConnector from '../walletConnector';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { TextureLoader } from 'three';
 import Toast from '../../components/ui/new-toast'
-import holeImage from '../../assets/hole.png'
-import boxImage from '../../assets/box.png'
+import coreImage from '../../assets/core.jpg'
+import potionImage from '../../assets/potion.jpg'
+import eyeImage from '../../assets/eye.jpg'
+import auraImage from '../../assets/aura.jpg'
+import fusionImage from '../../assets/fusion.jpg'
 import chaosImage from '../../assets/chaos.png';
 
 
@@ -70,20 +72,20 @@ const Room = ({ roomId }) => {
 
   const { account, connected, network, signAndSubmitTransaction } = useWallet();
   const loader = new TextureLoader();
-  const holeTexture = loader.load(holeImage);
-  const boxTexture = loader.load(boxImage);
+  const coreTexture = loader.load(coreImage);
+  const potionTexture = loader.load(potionImage);
+  const eyeTexture = loader.load(eyeImage);
+  const auraTexture = loader.load(auraImage);
+  const fusionTexture = loader.load(fusionImage)
   const chaosTexture = loader.load(chaosImage);
 
-  roomId = 6;
+  roomId = 10;
 
 const geometry = new THREE.PlaneGeometry(1, 1); // Adjust the size as needed
 
-const material = new THREE.MeshBasicMaterial({ map: holeTexture });
+const material = new THREE.MeshBasicMaterial({ map: coreTexture });
 const meshNew = new THREE.Mesh(geometry, material);
 meshNew.position.set(0, 0, 0);
-
-  // const memoizedSetCountdown = useCallback((value) => setCountdown(value), []);
-  // const memoizedSetTurnEnded = useCallback((value) => setTurnEnded(value), []);
 
   const boxRef = useRef<Mesh>(null);
   const navigate = useNavigate();
@@ -96,11 +98,11 @@ meshNew.position.set(0, 0, 0);
   const playerAddress = account?.address;
 
   const ItemModels = {
-    1: '../../assets/hole.glb',
-    2: '../../assets/box2.glb',
-    3: '../../assets/new.glb',
-    4: '../../assets/box.glb', 
-    5: '../../assets/potion.glb', 
+    1: '../../assets/core.glb',
+    2: '../../assets/potion.glb',
+    3: '../../assets/eye.glb',
+    4: '../../assets/aura.glb', 
+    5: '../../assets/fusion.glb',
   };
   
   // Create a reference for the grid
@@ -126,6 +128,7 @@ meshNew.position.set(0, 0, 0);
 
     const interval = setInterval(() => {
       if (roomActive) {
+        setDependency(true)
         clearInterval(interval);
       }
 
@@ -286,6 +289,8 @@ meshNew.position.set(0, 0, 0);
     )}
     {/* Additional roomGrid mapping for items_list */}
     {roomGrid && roomGrid.map((room, roomIndex) =>
+        // .filter(item => !room.players_list.some(player => player.inventory.includes(item.item_code)))
+        // .map((item, itemIndex) => {
           room.items_list.map((item, itemIndex) => {
             // Convert position data to numbers
             const x = parseFloat(item.position.x);
@@ -299,17 +304,17 @@ meshNew.position.set(0, 0, 0);
 
             const itemPositionScaleMap = {
               0: { position: [posX, 0.1, posY], scale: [1, 1, 1] },
-              1: { position: [posX, 0.1, posY], scale: [0.3, 0.4, 0.3] },
-              2: { position: [posX, 0, posY], scale: [1, 1, 1] },
-              3: { position: [posX, 0.4, posY], scale: [2, 2, 2] }, 
-              4: { position: [posX, 0.1, posY], scale: [1, 1, 1] }, 
-              5: { position: [posX, 0.5, posY], scale: [4, 3, 4] }, 
+              1: { position: [posX, 0.3, posY], scale: [0.015, 0.018, 0.015] },
+              2: { position: [posX, 0.5, posY], scale: [3, 3, 3] },
+              3: { position: [posX, 0.8, posY], scale: [0.6, 0.9, 0.6] }, 
+              4: { position: [posX, 0.4, posY], scale: [0.1, 0.1, 0.1] }, 
+              5: { position: [posX, 0.4, posY], scale: [0.85, 1.1, 0.85] }, 
             };
 
             return (
               // <Item key={itemIndex} position={[posX, 0.5, posY]} scale={[2, 2, 2]} itemCode={item.item_code} ItemModels={ItemModels} />
               <Item
-              key={itemIndex}
+              key={`${item.id}-${item.item_code}-${item.position.x}-${item.position.y}`}
               position={itemPositionScaleMap[item.item_code].position}
               scale={itemPositionScaleMap[item.item_code].scale}
               itemCode={item.item_code}
@@ -319,15 +324,15 @@ meshNew.position.set(0, 0, 0);
           })
         )}
     {/* Inventory rendering */}
-    <group position={[-1, 6, 12]}>
+    <group position={[-4, 5, 12]}>
             {/* Whiteboard */}
             <mesh>
-              <boxGeometry args={[5, 3, 0.1]}/>
+              <boxGeometry args={[5, 8, 0.1]}/>
               <meshStandardMaterial color="white"/>
             </mesh>
             {/* Inventory header text */}
             <Text
-              position={[0, 1.1, 0.1]}
+              position={[0, 3.5, 0.1]}
               fontSize={0.3}
               fontWeight={900}
               color="black"
@@ -350,16 +355,16 @@ meshNew.position.set(0, 0, 0);
                 const row = Math.floor(itemIndex / maxItemsPerRow);
                 const col = itemIndex % maxItemsPerRow;
                 const x = -1.5 + col * itemSpacing;
-                const y = 0.2 - row * itemSpacing;
-
-                const texture = getItemImage(item, holeTexture, boxTexture, chaosTexture);
-                texture.colorSpace = THREE.sRGBEncoding;
+                const y = 2.5 - row * itemSpacing;
 
                 return (
                   <InventoryItem
                   key={`inventory-item-${player.address}-${itemIndex}`}
-                  boxTexture={boxTexture}
-                  holeTexture={holeTexture}
+                  coreTexture={coreTexture}
+                  potionTexture={potionTexture}
+                  eyeTexture={eyeTexture}
+                  auraTexture={auraTexture}
+                  fusionTexture={fusionTexture}
                   chaosTexture={chaosTexture}
                   item={item}
                   position={[x, y, 0.1]}
@@ -446,26 +451,26 @@ const Item = ({ position, scale, itemCode, ItemModels }) => {
 };
 
 
-const getItemImage = (itemCode, holeTexture, boxTexture, chaosTexture) => {
+const getItemImage = (itemCode, coreTexture, potionTexture, eyeTexture, auraTexture, fusionTexture, chaosTexture) => {
   if(itemCode == 1) {
-      return holeTexture;
+    return coreTexture;
   }
   else if(itemCode == 2){
-    return boxTexture
+    return potionTexture
   }
   else if(itemCode == 3){
-    return boxTexture
+    return eyeTexture
   }
   if(itemCode == 4) {
-    return holeTexture;
-}
-if(itemCode == 5) {
-  return holeTexture;
-}
+    return auraTexture;
+  }
+  if(itemCode == 5) {
+    return fusionTexture;
+  }
   else if(itemCode == 0){
     return chaosTexture
   }
-  };
+};
 
   const handleItemClick = (selectedItem, setSelectedItems, selectedItems) => {
     // Check if the selected item is already in the list
@@ -481,7 +486,7 @@ if(itemCode == 5) {
     }
   };
 
-const InventoryItem = ({ item, position, onClick, holeTexture, boxTexture, chaosTexture }) => {
+const InventoryItem = ({ item, position, onClick, coreTexture, potionTexture, eyeTexture, auraTexture, fusionTexture, chaosTexture }) => {
     const [isSelected, setIsSelected] = useState(false);
     const [isItemHovered, setIsItemHovered] = useState(false);
 
@@ -489,15 +494,15 @@ const InventoryItem = ({ item, position, onClick, holeTexture, boxTexture, chaos
 
     const itemCodeNames = {
       0: 'Chaos',
-      1: 'Hole',
-      2: 'Clean Box',
-      3: 'Box',
-      4: 'Tele',
-      5: 'Potion'
+      1: 'Core',
+      2: 'Potion',
+      3: 'Eye',
+      4: 'Aura',
+      5: 'Fusion'
     };
 
     
-    const texture = getItemImage(item, holeTexture, boxTexture, chaosTexture);
+    const texture = getItemImage(item, coreTexture, potionTexture, eyeTexture, auraTexture, fusionTexture, chaosTexture);
     // texture.repeat.set(2, 2);
     texture.colorSpace = THREE.sRGBEncoding;
   
@@ -664,6 +669,7 @@ const useFetchRoomGrid = (roomId, setRoomGrid, dependency, setDependency) => {
 
         console.log(roomGrid)
         setRoomGrid(roomGrid.flat());
+        // setDependency(false)
       } catch (error) {
         if (error instanceof Error && error.message){
           if (error.message.includes('Network Error')) {
@@ -685,7 +691,16 @@ const useFetchRoomGrid = (roomId, setRoomGrid, dependency, setDependency) => {
 
 const usePositionEntities = (roomGrid, cellSize, padding) => {
   useEffect(() => {
+    // const itemPositionScaleMap = {
+    //   0: { scale: [1, 1, 1] },
+    //   1: { scale: [0.015, 0.018, 0.015] },
+    //   2: { scale: [0.07, 0.07, 0.07] },
+    //   3: { scale: [0.6, 0.9, 0.6] }, 
+    //   4: { scale: [0.1, 0.1, 0.1] }, 
+    //   5: { scale: [0.85, 1.1, 0.85] }, 
+    // };
     const positionEntities = () => {
+
       if (roomGrid) {
         roomGrid[0].players_list.forEach(player => {
           const x = parseFloat(player.position.x);
@@ -701,6 +716,10 @@ const usePositionEntities = (roomGrid, cellSize, padding) => {
           roomGrid[0].items_list.forEach(item => {
             const itemx = parseFloat(item.position.x);
             const itemy = parseFloat(item.position.y);
+
+            // const scale = itemPositionScaleMap[item.item_code].scale;
+
+            // const paddedCellSize = cellSize + (scale[0] * padding);
             
             const itemposX = (itemx * cellSize) + (itemx * padding);
             const itemposY = (itemy * cellSize) + (itemy * padding);
@@ -741,114 +760,11 @@ if (roomActive) {
   }, [setCountdown, setTurnEnded, roomActive]);
 };
 
-// const roomUpdateLogic = (countdown,
-//    simulating, setSimulating, setCountdown, setTurn,
-//     setDependency, turn, dependency, roomId, setToast, roomActive) => {
-
-//       useEffect(() => {
-//         const gameStateString = localStorage.getItem('gameState');
-//         if (gameStateString !== null) {
-//           const gameState = JSON.parse(gameStateString);
-//           const lastUpdated = gameState.lastUpdated || Date.now();
-//           let elapsedTime = Date.now() - lastUpdated;
-      
-//           // Calculate the current turn based on elapsed time and stored countdown
-//           let currentTurn = gameState.turn || 1;
-//           let remainingTime = gameState.countdown || 20;
-//           let isSimulating = gameState.simulating || false;
-      
-//           // Deduct the remaining countdown from the elapsed time
-//           elapsedTime -= (30 - remainingTime) * 1000; // Convert seconds to milliseconds
-      
-//           // Increment turns for each 20-second block
-//           while (elapsedTime >= 30 * 1000) {
-//             currentTurn++;
-//             elapsedTime -= 30 * 1000;
-//           }
-      
-//           // If the remaining time is less than or equal to 10 seconds, start simulating
-//           if (remainingTime <= 10) {
-//             isSimulating = true;
-//             // If it ends during simulation, increment the turn
-//             if (remainingTime === 0) {
-//               currentTurn++;
-//               remainingTime = 20; // Reset countdown for the next turn
-//             }
-//           }
-      
-//           // Update state values
-//           setTurn(currentTurn);
-//           setCountdown(remainingTime);
-//           setSimulating(isSimulating);
-//           setDependency(gameState.dependency || true);
-//         } else {
-//           // No gameState found, initialize with default values
-//           setTurn(1);
-//           setCountdown(20);
-//           setSimulating(false);
-//           setDependency(true);
-//         }
-//       }, []);
-      
-  
-  
-  
-
-//   useEffect(() => {
-//     if (countdown === 0 && !simulating && roomActive) {
-//       console.log("ive been run agn")
-//       // Start simulation
-//       setSimulating(true);
-//       setToast({
-//         visible: false,
-//         title: '',
-//         description: ''
-//       });
-//       setCountdown(10);
-//       console.log('Simulation started...');
-//       // UpdateRoom(roomId)
-//       setDependency(true);
-
-//       // Update the UI to indicate simulation
-//       setTimeout(() => {
-//         // End simulation
-//         setSimulating(false);
-//         setToast({
-//           visible: false,
-//           title: '',
-//           description: ''
-//         });
-//         // Increment turn
-//         setTurn(prevTurn => prevTurn + 1);
-//         setDependency(false);
-//         // Start countdown for the next turn
-//         setCountdown(20);
-//        // currentTurnTimer(setCountdown, setTurnEnded, roomActive)
-//       }, 10000); // Simulate for 10 seconds
-//     }
-    
-//     // Update local storage with current game state and lastUpdated time
-//     localStorage.setItem('gameState', JSON.stringify({ countdown, simulating, turn, dependency, lastUpdated: Date.now() }));
-//   }, [countdown, simulating, setSimulating, setCountdown, setTurn, setDependency]);
-
-//   useEffect(() => {
-//     if (countdown === 0 && simulating) {
-//         // End simulation
-//         setSimulating(false);
-//         // Increment turn
-//         setTurn(prevTurn => prevTurn + 1);
-//         setDependency(false);
-//         setCountdown(20);
-//     }
-//     localStorage.setItem('gameState', JSON.stringify({ countdown, simulating, turn, dependency, lastUpdated: Date.now() }));
-//   }, [countdown, simulating, setSimulating, setCountdown, setTurn, setDependency]);
-
-// };
-
 const roomUpdateLogic = (roomId, countdown, simulating, setSimulating, setCountdown, setDependency, setToast, roomActive) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+       //const response = await axios.get(`https://resolute-humor-production.up.railway.app/roomTimestamp/${roomId}`);
         const response = await axios.get(`http://localhost:3001/roomTimestamp/${roomId}`);
         const roomTimestamp = response.data.roomTimestamp || Date.now();
         const elapsedTime = Date.now() - roomTimestamp;
@@ -858,7 +774,9 @@ const roomUpdateLogic = (roomId, countdown, simulating, setSimulating, setCountd
         console.log(elapsedTime)
 
         //const remainingTime = Math.floor((30000 - elapsedTime) / 1000);
-        const remainingTime = Math.max(30 - Math.floor(elapsedTime / 1000), 0);
+        // Calculate the time until the next 30-second interval
+        const timeToNextInterval = 30000 - (elapsedTime % 30000);
+        const remainingTime = Math.floor(timeToNextInterval / 1000);
         console.log(remainingTime)
         setCountdown(remainingTime);
       } catch (error) {
@@ -870,10 +788,12 @@ const roomUpdateLogic = (roomId, countdown, simulating, setSimulating, setCountd
   }, [roomId, setCountdown, roomActive]);
 
   useEffect(() => {
-    if (countdown === 10 && !simulating) {
+    if (countdown <= 10 && !simulating) {
       // Start simulation
       setSimulating(true);
-      setDependency(true);
+      setTimeout(() => {
+        setDependency(true);
+      }, 2000);
 
       setTimeout(() => {
         // End simulation
