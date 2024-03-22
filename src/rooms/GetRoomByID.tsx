@@ -1,9 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Aptos, AptosConfig, MoveValue, Network } from "@aptos-labs/ts-sdk";
 
-
-const GetRoomByID = ({ rooms, setDetailedRooms, setIsLoading }) => {
-
+const GetRoomByID = ({ setDetailedRooms, setIsLoading }) => {
+    const [rooms, setRooms] = useState<any[]>([]); // Assuming room type here
     const config = new AptosConfig({ network: Network.RANDOMNET });
     const aptosClient = new Aptos(config);
 
@@ -12,31 +11,38 @@ const GetRoomByID = ({ rooms, setDetailedRooms, setIsLoading }) => {
             setIsLoading(true);      
 
         try {
+                const roomsResponse: { id: number }[] = await aptosClient.view({
+                    payload: {
+                        function: `${'0x0d17fdba4bd420569cb5b7a086a2d4b7e4a5857c89b846c6e795dd5b0fd4c217'}::dapp::get_rooms`,
+                    },
+                });
+
+                setRooms(roomsResponse);
+
+
 
             let detailedRooms: MoveValue[] = [];
             
-            const newRoom = rooms.flat()
-            // console.log(newRoom)
         
-            for (let i = 0; i < newRoom.length; i++) {
-            const detailedRoom = await aptosClient.view({
-            payload: {
-                function: `${'0x60e5a00ffd3cf1ba4323bfa8f5ddbe1dea2c8f817607a5f89a32b28e5f16d37e'}::dapp::get_room`,
-                functionArguments: [newRoom[i].id.toString()],
-            },
-        });
-
-          detailedRooms.push(detailedRoom);
-    }
-        
-        setDetailedRooms(detailedRooms.flat());
-        console.log(detailedRooms);
-
-            } catch (error) {
-                console.error('Error fetching room list:', error);
-            } finally {
-                setIsLoading(false);
+            for (const room of roomsResponse.flat()) {
+                try {
+                    const detailedRoom = await aptosClient.view({
+                        payload: {
+                            function: `${'0x0d17fdba4bd420569cb5b7a086a2d4b7e4a5857c89b846c6e795dd5b0fd4c217'}::dapp::get_room`,
+                            functionArguments: [room.id.toString()],
+                        },
+                    });
+                    detailedRooms.push(detailedRoom);
+                } catch (error) {
+                    console.error(`Error fetching details for room ${room.id}:`, error);
+                }
             }
+            setDetailedRooms(detailedRooms.flat());
+        } catch (error) {
+            console.error('Error fetching room details:', error);
+        } finally {
+            setIsLoading(false);
+        }
         };
 
         fetchRooms();

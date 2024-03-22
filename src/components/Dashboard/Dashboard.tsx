@@ -41,13 +41,22 @@ interface Room {
   player_count: string;
 }
 
+interface DetailedRoom {
+  active: boolean;
+  id: string;
+  max_player_count: number;
+  name: string;
+  player_count: string;
+  players_list: [];
+}
+
 /* @figmaId 68:2 */
 
 export const Dashboard: FC<Props> = memo(function Dashboard(props = {}) {
 
   const [selectedGame, setSelectedGame] = useState(0);
   const [rooms, setRooms] = useState<Room[]>([]);
-  const [detailedRooms, setDetailedRooms] = useState<Room[]>([]);
+  const [detailedRooms, setDetailedRooms] = useState<DetailedRoom[]>([]);
   const [IsLoading, setIsLoading] = useState(false);
   const [txnInProgress, setTxnInProgress] = useState(false);
   const [activeOption, setActiveOption] = useState('JOIN ROOM');
@@ -65,7 +74,7 @@ export const Dashboard: FC<Props> = memo(function Dashboard(props = {}) {
   const handleSpectateRetry = () => {
     setIsLoading(true);
     setRetryClicked(!retryClicked);
-    setIsLoading(false); // Set isLoading to false to trigger useEffect in GetRoomList
+    setIsLoading(false);
   };
 
   const [selectedLink, setSelectedLink] = useState('gameroom');
@@ -149,9 +158,11 @@ export const Dashboard: FC<Props> = memo(function Dashboard(props = {}) {
 
                 {activeOption === 'JOIN ROOM' && (
                   <>
-                    <GetRoomList setRooms={setRooms} setIsLoading={setIsLoading} />
-                    {IsLoading ? (
-                      <div className={classes.roomBg}>
+                    {/* <GetRoomList setRooms={setRooms} setIsLoading={setIsLoading} /> */}
+                    <GetRoomByID setIsLoading={setIsLoading} setDetailedRooms={setDetailedRooms} />
+                    {isLoading ? (
+                        <div className={classes.roomBg}>
+                         <div className={classes.roomBg}>
                         <div className={classes.roomId}>...</div>
                         <div className={classes.roomCreator}>...</div>
                         <div className={classes.roomSize}>...</div>
@@ -160,28 +171,26 @@ export const Dashboard: FC<Props> = memo(function Dashboard(props = {}) {
                         <div className={classes.roomBetting}>...</div>
                         <div className={classes.roomStatus}>...</div>
                       </div>
+                      </div>
                     ) : (
-                      rooms.flat().map((room) => (
-                        <div className={classes.roomBg} key={room.id}>
-                          <div className={classes.roomId}>{room.id}</div>
-                          <div className={classes.roomId}>{room.name}</div>
-                          <div className={classes.roomId}>{room.max_player_count}</div>
-                          <div className={classes.roomId}>{room.player_count} / {room.max_player_count}</div>
-                          <div className={classes.roomId}>{room.active.toString()}</div>
-                          <div className={classes.roomId}>{room.active.toString()}</div>
-                          <div className={classes.roomStatus}>
-                            <GetRoomByID key={room.id} rooms={rooms} setIsLoading={setIsLoading} setDetailedRooms={setDetailedRooms} />
-                            {!IsLoading &&
-                              detailedRooms.flat().map((detailedRoom) => (
-                                detailedRoom.id === room.id && (
-                                  <JoinRoom key={detailedRoom.id} detailedRoom={detailedRooms} roomId={detailedRoom.id} setIsLoading={setIsLoading} />
-                                  
-                                )
-                              ))}
-                          </div>
+                      detailedRooms.flat().map((detailedRoom) => (
+                        detailedRoom && (
+                      <div className={classes.roomBg} key={detailedRoom.id}>
+                        {/* Your room details */}
+                        <div className={classes.roomId}>{detailedRoom.id}</div>
+                        <div className={classes.roomId}>New Room</div>
+                        <div className={classes.roomId}>5</div>
+                        <div className={classes.roomId}>{detailedRoom.players_list.length} / 5</div>
+                        <div className={classes.roomId}>{detailedRoom.active.toString()}</div>
+                        <div className={classes.roomId}>{detailedRoom.active.toString()}</div>
+                        <div className={classes.roomStatus}>
+                          {/* Pass detailed room ID to JoinRoom component */}
+                          <JoinRoom key={detailedRoom.id} detailedRoom={detailedRooms} roomId={detailedRoom.id} setIsLoading={setIsLoading} />
                         </div>
-                      ))
-                    )}
+                        </div>
+                          )
+                        ))
+                      )}
                   </>
                 )}
               </div>

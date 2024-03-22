@@ -33,9 +33,3 @@ const ActiveGame = () => {
 };
 
 export default ActiveGame;
-
-// else {
-//     const roomIdForTesting = '2';
-//     localStorage.setItem('activeRoomId', roomIdForTesting);
-//     setActiveRoomId(roomIdForTesting);
-//   }

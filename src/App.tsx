@@ -17,9 +17,7 @@ interface Props {
   className?: string;
 }
 export const App: FC<Props> = memo(function App(props = {}) {
-  const wallets = [new PetraWallet(), new MartianWallet()];
-
-  console.log(process.env.MODULE_ADDRESS)
+  const wallets = [new PetraWallet()];
   
   return (
     <AptosWalletAdapterProvider plugins={wallets} autoConnect={true}>

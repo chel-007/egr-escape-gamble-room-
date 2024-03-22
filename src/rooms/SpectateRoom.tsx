@@ -1,7 +1,6 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import classes from '../components/Dashboard/Dashboard.module.css';
-import Room from '../components/Game/Room';
 
 const SpectateRoom = ({ roomId, rooms, setIsLoading }) => {
   const [isActive, setIsActive] = useState(false);
@@ -24,11 +23,8 @@ const SpectateRoom = ({ roomId, rooms, setIsLoading }) => {
   }, [roomId, rooms]);
 
   const handleSpectateClick = () => {
-    // Logic to handle spectate button click
-    // Example: Navigate to the spectate view of the room
-    // You might want to fetch the spectate view or update the UI accordingly
+    alert("Feature Coming Soon")
     setIsLoading(true);
-    // Perform actions to spectate the room
     setIsLoading(false);
   };
 

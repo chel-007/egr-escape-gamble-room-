@@ -8,8 +8,6 @@ const GetRoomList = ({ setRooms, setIsLoading }) => {
     const aptosClient = new Aptos(config);
     const [toastVisible, setToastVisible] = useState(false);
 
-    console.log("from get room")
-
     useEffect(() => {
         const fetchRooms = async () => {
             setIsLoading(true);
@@ -17,7 +15,7 @@ const GetRoomList = ({ setRooms, setIsLoading }) => {
             try {
                 const roomsResponse = await aptosClient.view({
                     payload: {
-                        function: `${'0x60e5a00ffd3cf1ba4323bfa8f5ddbe1dea2c8f817607a5f89a32b28e5f16d37e'}::dapp::get_rooms`,
+                        function: `${'0x0d17fdba4bd420569cb5b7a086a2d4b7e4a5857c89b846c6e795dd5b0fd4c217'}::dapp::get_rooms`,
                     },
                 });
                 

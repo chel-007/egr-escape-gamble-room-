@@ -31,7 +31,7 @@ const JoinRoom = ({ detailedRoom, roomId, setIsLoading }) => {
 
     const payload: Types.TransactionPayload = {
       type: "entry_function_payload",
-      function: `${'0x60e5a00ffd3cf1ba4323bfa8f5ddbe1dea2c8f817607a5f89a32b28e5f16d37e'}::dapp::add_player`,
+      function: `${'0x0d17fdba4bd420569cb5b7a086a2d4b7e4a5857c89b846c6e795dd5b0fd4c217'}::dapp::add_player`,
       type_arguments: [],
       arguments: [
         account?.address,

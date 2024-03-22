@@ -4,15 +4,13 @@ import { useState } from "react";
 
 export default function useAddPlayerInput (playerAddress, roomId, newPosition, signAndSubmitTransaction, countdown) {
     const { row, col } = newPosition;
-    console.log(row, col);
-    // let count = countdown - 1;
-    // let countdownEnded = false;
+    //console.log(row, col);
 
     const addPlayerInput = async () => {
 
       const payload: Types.TransactionPayload = {
         type: "entry_function_payload",
-        function: `${'0x60e5a00ffd3cf1ba4323bfa8f5ddbe1dea2c8f817607a5f89a32b28e5f16d37e'}::dapp::add_player_input`,
+        function: `${'0x0d17fdba4bd420569cb5b7a086a2d4b7e4a5857c89b846c6e795dd5b0fd4c217'}::dapp::add_player_input`,
         type_arguments: [],
         arguments: [playerAddress, roomId, row.toString(), col.toString()]
       };
@@ -33,29 +31,7 @@ export default function useAddPlayerInput (playerAddress, roomId, newPosition, s
         }
       }
     };
-
-    // const startCountdown = () => {
-    //     const countdownInterval = setInterval(() => {
-    //       if (count === 0) {
-    //         clearInterval(countdownInterval);
-    //         countdownEnded = true;
-    //         console.log("Countdown ended. Cannot make move.");
-    //         return;
-    //       }
-    //       console.log(count);
-    //       count--;
-    //     }, 1000);
-    
-    //     // Start player move if countdown is ongoing
-    //     if (countdown > 0) {
-          addPlayerInput();
-    //     }
-    //     else {
-
-    //     }
-    //   };
-
-    // startCountdown();
+        addPlayerInput();
 
     return (
         <div style={{position: 'absolute', zIndex: '10', backgroundColor: 'white', width: '40%', height: '30px'}}>

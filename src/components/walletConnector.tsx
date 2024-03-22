@@ -41,7 +41,7 @@ export default function WalletConnector(props: { isTxnInProgress?: boolean }) {
                     }
                   );
                   const data = await response.json();
-                  console.log(data);
+                  
                   if (data.error_code === 'account_not_found') {
                     await initializeAccount();
                   }
