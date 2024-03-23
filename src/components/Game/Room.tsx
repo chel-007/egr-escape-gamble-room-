@@ -26,7 +26,8 @@ import potionImage from '../../assets/potion.jpg'
 import eyeImage from '../../assets/eye.jpg'
 import auraImage from '../../assets/aura.jpg'
 import fusionImage from '../../assets/fusion.jpg'
-import chaosImage from '../../assets/chaos.png';
+import chaosImage from '../../assets/chaos.png'
+import skyImage from '../../assets/sky.jpg';
 
 
 interface RoomGridItem {
@@ -63,6 +64,7 @@ const Room = ({ roomId }) => {
   const auraTexture = loader.load(auraImage);
   const fusionTexture = loader.load(fusionImage)
   const chaosTexture = loader.load(chaosImage);
+  const skyTexture = loader.load(skyImage)
 
 const geometry = new THREE.PlaneGeometry(1, 1);
 
@@ -305,6 +307,7 @@ meshNew.position.set(0, 0, 0);
                   auraTexture={auraTexture}
                   fusionTexture={fusionTexture}
                   chaosTexture={chaosTexture}
+                  skyTexture={skyTexture}
                   item={item}
                   position={[x, y, 0.1]}
                   onClick={() => handleItemClick(item, setSelectedItems, selectedItems)}/>
@@ -378,7 +381,7 @@ const Item = ({ position, scale, itemCode, ItemModels }) => {
 };
 
 
-const getItemImage = (itemCode, coreTexture, potionTexture, eyeTexture, auraTexture, fusionTexture, chaosTexture) => {
+const getItemImage = (itemCode, coreTexture, potionTexture, eyeTexture, auraTexture, fusionTexture, chaosTexture, skyTexture) => {
   if(itemCode == 1) {
     return coreTexture;
   }
@@ -386,7 +389,7 @@ const getItemImage = (itemCode, coreTexture, potionTexture, eyeTexture, auraText
     return potionTexture
   }
   else if(itemCode == 3){
-    return eyeTexture
+    return eyeTexture;
   }
   if(itemCode == 4) {
     return auraTexture;
@@ -394,8 +397,11 @@ const getItemImage = (itemCode, coreTexture, potionTexture, eyeTexture, auraText
   if(itemCode == 5) {
     return fusionTexture;
   }
-  else if(itemCode == 0){
-    return chaosTexture
+  if(itemCode == 0){
+    return chaosTexture;
+  }
+  else if(itemCode == 999){
+    return skyTexture;
   }
 };
 
@@ -409,7 +415,7 @@ const getItemImage = (itemCode, coreTexture, potionTexture, eyeTexture, auraText
     }
   };
 
-const InventoryItem = ({ item, position, onClick, coreTexture, potionTexture, eyeTexture, auraTexture, fusionTexture, chaosTexture }) => {
+const InventoryItem = ({ item, position, onClick, coreTexture, potionTexture, eyeTexture, auraTexture, fusionTexture, chaosTexture, skyTexture }) => {
     const [isSelected, setIsSelected] = useState(false);
     const [isItemHovered, setIsItemHovered] = useState(false);
 
@@ -417,6 +423,7 @@ const InventoryItem = ({ item, position, onClick, coreTexture, potionTexture, ey
 
     const itemCodeNames = {
       0: 'Chaos',
+      999: 'Sky',
       1: 'Core',
       2: 'Potion',
       3: 'Eye',
@@ -425,7 +432,7 @@ const InventoryItem = ({ item, position, onClick, coreTexture, potionTexture, ey
     };
 
     
-    const texture = getItemImage(item, coreTexture, potionTexture, eyeTexture, auraTexture, fusionTexture, chaosTexture);
+    const texture = getItemImage(item, coreTexture, potionTexture, eyeTexture, auraTexture, fusionTexture, chaosTexture, skyTexture);
     // texture.repeat.set(2, 2);
     texture.colorSpace = THREE.sRGBEncoding;
   
@@ -621,38 +628,6 @@ const useFetchRoomGrid = (roomId, setRoomGrid, dependency, setRoomActive) => {
 
 
 
-// const usePositionEntities = (roomGrid, cellSize, padding) => {
-//   useEffect(() => {
-//     const positionEntities = () => {
-//       if (roomGrid) {
-//         roomGrid[0].players_list.forEach(player => {
-//           const x = parseFloat(player.position.x);
-//           const y = parseFloat(player.position.y);
-          
-//           const posX = (x * cellSize) + (x * padding);
-//           const posY = (y * cellSize) + (y * padding);
-          
-//           player.position.x = posX;
-//           player.position.y = posY;
-//         });
-
-//           roomGrid[0].items_list.forEach(item => {
-//             const itemx = parseFloat(item.position.x);
-//             const itemy = parseFloat(item.position.y)
-//             const itemposX = (itemx * cellSize) + (itemx * padding);
-//             const itemposY = (itemy * cellSize) + (itemy * padding);
-            
-//             item.position.x = itemposX;
-//             item.position.y = itemposY;
-//         });
-
-//         console.log(roomGrid);
-//       }
-//     };
-//     positionEntities();
-//   }, [roomGrid]);
-// };
-
 const currentTurnTimer = (setCountdown, setTurnEnded, roomActive) => {
   useEffect(() => {
     let countdownTimer: ReturnType<typeof setInterval> | undefined = undefined;
@@ -690,7 +665,7 @@ const roomUpdateLogic = (roomId, countdown, simulating, setSimulating, setCountd
         // Calculate the time until the next 30-second interval
         const timeToNextInterval = (40000 - (elapsedTime % 30000));
         const remainingTime = Math.floor(timeToNextInterval / 1000);
-        console.log(remainingTime)
+        // console.log(remainingTime)
         setCountdown(remainingTime);
       } catch (error) {
         console.error('Error fetching room timestamp:', error);
@@ -849,7 +824,7 @@ const getPlayerPosition = (roomGrid: RoomGridItem[] | null, playerAddress: strin
   const row = parseInt(playerPosition.x);
   const col = parseInt(playerPosition.y);
 
-  console.log(row, col)
+  // console.log(row, col)
   return { row, col };
 };
 
